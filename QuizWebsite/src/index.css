@@ -1,0 +1,615 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#root {
+  height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #f8fafc;
+  height: 100vh;
+  overflow: hidden;
+  overflow-x: hidden;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Custom utility classes */
+.text-shadow {
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Custom Bootstrap Sidebar Gradient */
+.bg-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.08) 100%);
+  pointer-events: none;
+}
+
+.bg-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+  animation: shimmer 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: rotate(0deg) scale(1); opacity: 0.5; }
+  50% { transform: rotate(180deg) scale(1.1); opacity: 1; }
+}
+
+/* Desktop layout - main content offset */
+@media (min-width: 769px) {
+  .main-content {
+    margin-left: 250px !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+  
+  .main-content main {
+    height: 100vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+  
+  .main-content main {
+    height: calc(100vh - 60px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  
+  .sidebar-desktop {
+    display: none !important;
+  }
+  
+  .sidebar-mobile {
+    display: block !important;
+  }
+}
+
+.card {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e1e1e1;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+  box-sizing: border-box !important;
+  display: block !important;
+  font-family: inherit !important;
+}
+
+.form-group select {
+  box-sizing: border-box !important;
+  display: block !important;
+  font-family: inherit !important;
+}
+
+.form-group input[type="text"] {
+  box-sizing: border-box !important;
+  display: block !important;
+  font-family: inherit !important;
+}
+
+.form-group input[type="radio"] {
+  display: inline-block !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+.btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary {
+  background: #667eea;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #5a67d8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-success {
+  background: #48bb78;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #38a169;
+}
+
+.btn-danger {
+  background: #f56565;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #e53e3e;
+}
+
+.btn-secondary {
+  background: #718096;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #4a5568;
+}
+
+.options-list {
+  margin: 20px 0;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 10px;
+  background: #f7fafc;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.option-item:hover {
+  border-color: #667eea;
+}
+
+.option-item input[type="text"] {
+  flex: 1;
+  border: 1px solid #e2e8f0;
+}
+
+.option-item input[type="radio"] {
+  margin-right: 10px;
+}
+
+.quiz-question {
+  margin-bottom: 30px;
+}
+
+.quiz-question h3 {
+  color: #2d3748;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+}
+
+.quiz-options {
+  display: grid;
+  gap: 10px;
+}
+
+.quiz-option {
+  padding: 15px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f7fafc;
+}
+
+.quiz-option:hover {
+  border-color: #667eea;
+  background: #edf2f7;
+}
+
+.quiz-option.selected {
+  border-color: #667eea;
+  background: #667eea;
+  color: white;
+}
+
+.quiz-option input[type="radio"] {
+  margin-right: 10px;
+}
+
+.question-list {
+  display: grid;
+  gap: 20px;
+}
+
+.question-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border-left: 5px solid #667eea;
+}
+
+.question-card h4 {
+  color: #2d3748;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.question-options {
+  margin-bottom: 15px;
+}
+
+.question-options div {
+  padding: 8px 0;
+  color: #4a5568;
+}
+
+.question-options .correct {
+  color: #48bb78;
+  font-weight: 600;
+}
+
+.question-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.score-display {
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  border-radius: 15px;
+  margin-bottom: 30px;
+}
+
+.score-display h2 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.score-display p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #718096;
+}
+
+.empty-state h3 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+/* Container and Layout Fixes */
+.container-fluid {
+  padding-left: 15px;
+  padding-right: 15px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Prevent horizontal overflow on mobile */
+@media (max-width: 576px) {
+  .main-content main {
+    padding: 15px !important;
+  }
+  
+  .card {
+    padding: 20px !important;
+    margin-bottom: 15px !important;
+  }
+  
+  .container-fluid {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* Custom Modal Styling */
+.modal-dialog {
+  max-width: 400px !important;
+  margin: 1.75rem auto !important;
+}
+
+.modal-content {
+  border-radius: 16px !important;
+  border: none !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 
+              0 8px 25px rgba(0, 0, 0, 0.1) !important;
+  background-color: #ffffff !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  padding: 20px 24px 16px 24px !important;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px 16px 0 0 !important;
+}
+
+.modal-title {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.modal-body {
+  padding: 20px 24px !important;
+  font-size: 0.95rem !important;
+  color: #475569 !important;
+  line-height: 1.5 !important;
+}
+
+.modal-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+  padding: 16px 24px 20px 24px !important;
+  background: #fafbfc;
+  border-radius: 0 0 16px 16px !important;
+  gap: 12px !important;
+}
+
+.modal-footer .btn {
+  font-size: 0.9rem !important;
+  padding: 8px 20px !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  min-width: 80px !important;
+}
+
+.btn-close {
+  padding: 8px !important;
+  margin: -8px -8px -8px auto !important;
+  background-size: 16px !important;
+  opacity: 0.6 !important;
+  border-radius: 6px !important;
+}
+
+.btn-close:hover {
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Modal Animation */
+.modal.fade .modal-dialog {
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out !important;
+  transform: scale(0.9) translateY(-20px) !important;
+  opacity: 0 !important;
+}
+
+.modal.show .modal-dialog {
+  transform: scale(1) translateY(0) !important;
+  opacity: 1 !important;
+}
+
+/* Mobile Modal Adjustments */
+@media (max-width: 576px) {
+  .modal-dialog {
+    max-width: 320px !important;
+    margin: 1rem auto !important;
+  }
+  
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  
+  .modal-footer .btn {
+    min-width: 70px !important;
+    padding: 8px 16px !important;
+  }
+}
+
+/* NFT Transfer Component Styling */
+.nft-warning-box {
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.nft-warning-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #856404;
+}
+
+.nft-result-success {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 30px;
+}
+
+.nft-result-error {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 30px;
+}
+
+.nft-hash-display {
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  margin-top: 5px;
+  font-family: monospace;
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+
+.nft-info-card {
+  padding: 15px;
+  background-color: #f7fafc;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.nft-info-title {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: #2d3748;
+}
+
+.nft-info-text {
+  font-size: 0.9rem;
+  color: #4a5568;
+  margin: 0;
+}
+
+.nft-tip-box {
+  background-color: #e7f3ff;
+  border: 1px solid #b8daff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 25px;
+}
+
+.nft-tip-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #004085;
+}
+
+/* Responsive adjustments for NFT form */
+@media (max-width: 768px) {
+  .nft-form-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+  
+  .nft-button-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .nft-form-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+  }
+  
+  .nft-button-group {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 15px !important;
+    justify-content: center !important;
+  }
+}

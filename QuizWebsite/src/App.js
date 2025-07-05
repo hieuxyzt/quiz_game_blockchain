@@ -1,0 +1,250 @@
+import React, { useState, useEffect } from 'react';
+import BatchCreateQuestion from './components/BatchCreateQuestion';
+import TakeQuiz from './components/TakeQuiz';
+import ViewQuestions from './components/ViewQuestions';
+import NFTTransfer from './components/NFTTransfer';
+
+function App() {
+  const [currentView, setCurrentView] = useState('quiz');
+  const [questions, setQuestions] = useState([]);
+
+  // Load questions from localStorage on component mount
+  useEffect(() => {
+    const savedQuestions = localStorage.getItem('quizQuestions');
+    if (savedQuestions) {
+      setQuestions(JSON.parse(savedQuestions));
+    }
+  }, []);
+
+  // Save questions to localStorage whenever questions change
+  useEffect(() => {
+    localStorage.setItem('quizQuestions', JSON.stringify(questions));
+  }, [questions]);
+
+  const addQuestions = (newQuestions) => {
+    const questionsWithIds = newQuestions.map((question, index) => ({
+      ...question,
+      id: (Date.now() + index).toString()
+    }));
+    setQuestions(prev => [...prev, ...questionsWithIds]);
+  };
+
+  const deleteQuestion = (questionId) => {
+    setQuestions(prev => prev.filter(q => q.id !== questionId));
+  };
+
+  const editQuestion = (questionId, updatedQuestion) => {
+    setQuestions(prev => 
+      prev.map(q => q.id === questionId ? { ...updatedQuestion, id: questionId } : q)
+    );
+  };
+
+  const renderCurrentView = () => {
+    switch (currentView) {
+      case 'create':
+        return <BatchCreateQuestion onAddQuestions={addQuestions} />;
+      case 'quiz':
+        return <TakeQuiz questions={questions} />;
+      case 'view':
+        return (
+          <ViewQuestions 
+            questions={questions} 
+            onDeleteQuestion={deleteQuestion}
+            onEditQuestion={editQuestion}
+          />
+        );
+      case 'nft':
+        return <NFTTransfer />;
+      default:
+        return <TakeQuiz questions={questions} />;
+    }
+  };
+
+  return (
+    <div className="d-flex flex-column flex-md-row vh-100">
+      {/* Left Sidebar - Desktop */}
+      <nav className="bg-primary text-white position-fixed sidebar-desktop" style={{ width: '250px', height: '100vh', zIndex: 1000 }}>
+        <div className="p-3 border-bottom border-light border-opacity-25">
+          <h1 className="fs-5 mb-0 text-shadow">🎓 Quiz Website</h1>
+          <p className="mb-0 small opacity-75">Create, Share, and Take Interactive Quizzes</p>
+        </div>
+        
+        <div className="py-3">
+          <button
+            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
+              currentView === 'quiz' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+            }`}
+            onClick={() => setCurrentView('quiz')}
+            style={{ 
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (currentView !== 'quiz') {
+                e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                e.target.style.paddingLeft = '1.5rem';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentView !== 'quiz') {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.paddingLeft = '1rem';
+              }
+            }}
+          >
+            <span className="fs-5">🎯</span>
+            <span>Take Quiz</span>
+          </button>
+          
+          <button
+            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
+              currentView === 'create' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+            }`}
+            onClick={() => setCurrentView('create')}
+            style={{ 
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (currentView !== 'create') {
+                e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                e.target.style.paddingLeft = '1.5rem';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentView !== 'create') {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.paddingLeft = '1rem';
+              }
+            }}
+          >
+            <span className="fs-5">📝</span>
+            <span>Create Questions</span>
+          </button>
+          
+          <button
+            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 position-relative ${
+              currentView === 'view' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+            }`}
+            onClick={() => setCurrentView('view')}
+            style={{ 
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (currentView !== 'view') {
+                e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                e.target.style.paddingLeft = '1.5rem';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentView !== 'view') {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.paddingLeft = '1rem';
+              }
+            }}
+          >
+            <span className="fs-5">📚</span>
+            <span className="flex-grow-1">View Questions</span>
+            <span className="badge bg-light bg-opacity-50 text-white rounded-pill">
+              {questions.length}
+            </span>
+          </button>
+          
+          <button
+            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
+              currentView === 'nft' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+            }`}
+            onClick={() => setCurrentView('nft')}
+            style={{ 
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (currentView !== 'nft') {
+                e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                e.target.style.paddingLeft = '1.5rem';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentView !== 'nft') {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.paddingLeft = '1rem';
+              }
+            }}
+          >
+            <span className="fs-5">🎨</span>
+            <span>NFT Transfer</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Navigation */}
+      <nav className="bg-primary text-white sidebar-mobile d-none">
+        <div className="p-2 border-bottom border-light border-opacity-25 text-center">
+          <h1 className="fs-6 mb-0 text-shadow">🎓 Quiz Website</h1>
+        </div>
+        
+        <div className="d-flex p-2 gap-1" style={{ overflowX: 'auto' }}>
+          <button
+            className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${
+              currentView === 'quiz' ? 'bg-light bg-opacity-25 fw-semibold' : ''
+            }`}
+            onClick={() => setCurrentView('quiz')}
+            style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
+          >
+            <span className="fs-6">🎯</span>
+            <span>Quiz</span>
+          </button>
+          
+          <button
+            className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${
+              currentView === 'create' ? 'bg-light bg-opacity-25 fw-semibold' : ''
+            }`}
+            onClick={() => setCurrentView('create')}
+            style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
+          >
+            <span className="fs-6">📝</span>
+            <span>Create</span>
+          </button>
+          
+          <button
+            className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 position-relative ${
+              currentView === 'view' ? 'bg-light bg-opacity-25 fw-semibold' : ''
+            }`}
+            onClick={() => setCurrentView('view')}
+            style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
+          >
+            <span className="fs-6">📚</span>
+            <span>View</span>
+            <span className="badge bg-light bg-opacity-75 text-dark position-absolute top-0 end-0 rounded-pill" style={{ fontSize: '0.6rem' }}>
+              {questions.length}
+            </span>
+          </button>
+          
+          <button
+            className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${
+              currentView === 'nft' ? 'bg-light bg-opacity-25 fw-semibold' : ''
+            }`}
+            onClick={() => setCurrentView('nft')}
+            style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
+          >
+            <span className="fs-6">🎨</span>
+            <span>NFT</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="flex-grow-1 main-content d-flex flex-column">
+        <header className="bg-white bg-opacity-95 p-3 border-bottom border-light d-md-none flex-shrink-0" style={{ backdropFilter: 'blur(10px)' }}>
+          <p className="mb-0 text-muted fw-medium text-center">Create, Share, and Take Interactive Quizzes</p>
+        </header>
+
+        <main className="p-4 flex-grow-1 overflow-auto">
+          <div className="container-fluid" style={{ maxWidth: '1200px' }}>
+            {renderCurrentView()}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+export default App;
