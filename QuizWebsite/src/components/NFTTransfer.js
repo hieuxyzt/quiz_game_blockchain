@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import quizContract from "../contract/quizContract";
-import web3 from "../contract/web3"
+import web3 from "../contract/web3";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 class NFTTransfer extends Component {
     constructor(props) {
@@ -20,6 +22,10 @@ class NFTTransfer extends Component {
             isTransferring: false,
             isMinting: false,
             transferResult: null,
+            mintingResult: null,
+            showLoadingModal: false,
+            showResultModal: false,
+            currentOperation: '', // 'transfer' or 'mint'
             // Mock user info (in a real app, this would come from Web3/wallet connection)
             userInfo: {
                 address: '',
@@ -76,7 +82,9 @@ class NFTTransfer extends Component {
         e.preventDefault();
         this.setState({
             isMinting: true,
-            mintingResult: null
+            mintingResult: null,
+            showLoadingModal: true,
+            currentOperation: 'mint'
         });
 
         try {
@@ -88,9 +96,11 @@ class NFTTransfer extends Component {
             this.setState({
                 mintingResult: {
                     success: true,
-                    transactionHash: transactionHash,
-                    message: 'NFT transfer completed successfully!'
-                }
+                    transactionHash: transactionHash.transactionHash,
+                    message: 'NFT minting completed successfully!'
+                },
+                showLoadingModal: false,
+                showResultModal: true
             });
 
             this.componentDidMount()
@@ -99,8 +109,10 @@ class NFTTransfer extends Component {
             this.setState({
                 mintingResult: {
                     success: false,
-                    message: 'Transfer failed: ' + error.message
-                }
+                    message: 'Minting failed: ' + error.message
+                },
+                showLoadingModal: false,
+                showResultModal: true
             });
         } finally {
             this.setState({isMinting: false});
@@ -111,7 +123,9 @@ class NFTTransfer extends Component {
         e.preventDefault();
         this.setState({
             isTransferring: true,
-            transferResult: null
+            transferResult: null,
+            showLoadingModal: true,
+            currentOperation: 'transfer'
         });
 
         try {
@@ -123,14 +137,18 @@ class NFTTransfer extends Component {
                     success: true,
                     transactionHash: '0x' + Math.random().toString(16).substr(2, 64),
                     message: 'NFT transfer completed successfully!'
-                }
+                },
+                showLoadingModal: false,
+                showResultModal: true
             });
         } catch (error) {
             this.setState({
                 transferResult: {
                     success: false,
                     message: 'Transfer failed: ' + error.message
-                }
+                },
+                showLoadingModal: false,
+                showResultModal: true
             });
         } finally {
             this.setState({isTransferring: false});
@@ -149,8 +167,20 @@ class NFTTransfer extends Component {
         });
     };
 
+    closeLoadingModal = () => {
+        this.setState({ showLoadingModal: false });
+    };
+
+    closeResultModal = () => {
+        this.setState({ 
+            showResultModal: false,
+            transferResult: null,
+            mintingResult: null
+        });
+    };
+
     render() {
-        const {nftSymbol, formData, isTransferring, transferResult, isMinting, userInfo} = this.state;
+        const {nftSymbol, formData, isTransferring, transferResult, mintingResult, isMinting, userInfo, showLoadingModal, showResultModal, currentOperation} = this.state;
 
         return (
             <div>
@@ -331,34 +361,75 @@ class NFTTransfer extends Component {
                             </button>
                         </div>
                     </form>
-
-                    {transferResult && (
-                        <div className={transferResult.success ? 'nft-result-success' : 'nft-result-error'}>
-                            <h4 style={{
-                                color: transferResult.success ? '#155724' : '#721c24',
-                                marginBottom: '10px',
-                                fontSize: '1.1rem'
-                            }}>
-                                {transferResult.success ? '✅ Success!' : '❌ Error'}
-                            </h4>
-                            <p style={{
-                                color: transferResult.success ? '#155724' : '#721c24',
-                                margin: 0,
-                                fontSize: '0.95rem'
-                            }}>
-                                {transferResult.message}
-                            </p>
-                            {transferResult.transactionHash && (
-                                <div style={{marginTop: '15px'}}>
-                                    <strong style={{fontSize: '0.9rem'}}>Transaction Hash:</strong>
-                                    <div className="nft-hash-display">
-                                        {transferResult.transactionHash}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
                 </div>
+
+                {/* Loading Modal */}
+                {showLoadingModal && (
+                    <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}} tabIndex="-1">
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">
+                                        {currentOperation === 'mint' ? '🎨 Minting NFT...' : '🚀 Transferring NFT...'}
+                                    </h5>
+                                </div>
+                                <div className="modal-body text-center">
+                                    <div className="spinner-border text-primary mb-3" role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p>
+                                        {currentOperation === 'mint' 
+                                            ? 'Please wait while your NFT is being minted...' 
+                                            : 'Please wait while your NFT is being transferred...'}
+                                    </p>
+                                    <small className="text-muted">This may take a few moments.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Result Modal */}
+                {showResultModal && (
+                    <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}} tabIndex="-1">
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">
+                                        {(transferResult?.success || mintingResult?.success) ? '✅ Success!' : '❌ Transaction Failed'}
+                                    </h5>
+                                    <button type="button" className="btn-close" onClick={this.closeResultModal}></button>
+                                </div>
+                                <div className="modal-body">
+                                    <div className={`alert ${(transferResult?.success || mintingResult?.success) ? 'alert-success' : 'alert-danger'}`}>
+                                        <strong>
+                                            {(transferResult?.success || mintingResult?.success) ? 'Transaction Successful!' : 'Transaction Failed!'}
+                                        </strong>
+                                    </div>
+                                    <p>{transferResult?.message || mintingResult?.message}</p>
+                                    
+                                    {(transferResult?.transactionHash || mintingResult?.transactionHash) && (
+                                        <div className="mt-3">
+                                            <strong>Transaction Hash:</strong>
+                                            <div className="p-2 bg-light rounded mt-2" style={{
+                                                fontFamily: 'monospace',
+                                                fontSize: '0.9rem',
+                                                wordBreak: 'break-all'
+                                            }}>
+                                                {transferResult?.transactionHash || mintingResult?.transactionHash}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-primary" onClick={this.closeResultModal}>
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
