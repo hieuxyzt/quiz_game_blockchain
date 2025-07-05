@@ -35,7 +35,10 @@ class BatchCreateQuestion extends Component {
         message: '',
         variant: 'info'
       },
-      currentAddress: ''
+      currentAddress: '',
+      // Loading modal state
+      showLoadingModal: false,
+      isCreatingQuestions: false
     };
   }
 
@@ -190,29 +193,51 @@ class BatchCreateQuestion extends Component {
       return;
     }
 
-    await quizContract.methods.addAllQuizzes(validQuestions).send({
-        from: this.state.currentAddress,
-    });
-    this.props.onAddQuestions(validQuestions);
-
-    // Reset form
+    // Show loading modal
     this.setState({
-      questions: [
-        {
-          question: '',
-          options: ['', '', '', ''],
-          correctAnswer: 0,
-          difficulty: 'medium',
-          category: 'general'
-        }
-      ],
-      alertConfig: {
-        title: 'Success!',
-        message: `${validQuestions.length} question(s) added successfully!`,
-        variant: 'success'
-      },
-      showAlertModal: true
+      isCreatingQuestions: true,
+      showLoadingModal: true
     });
+
+    try {
+      await quizContract.methods.addAllQuizzes(validQuestions).send({
+          from: this.state.currentAddress,
+      });
+      this.props.onAddQuestions(validQuestions);
+
+      // Hide loading modal and reset form
+      this.setState({
+        questions: [
+          {
+            question: '',
+            options: ['', '', '', ''],
+            correctAnswer: 0,
+            difficulty: 'medium',
+            category: 'general'
+          }
+        ],
+        showLoadingModal: false,
+        alertConfig: {
+          title: 'Success!',
+          message: `${validQuestions.length} question(s) added successfully!`,
+          variant: 'success'
+        },
+        showAlertModal: true
+      });
+    } catch (error) {
+      // Hide loading modal and show error
+      this.setState({
+        showLoadingModal: false,
+        alertConfig: {
+          title: 'Transaction Failed',
+          message: 'Failed to create questions: ' + error.message,
+          variant: 'danger'
+        },
+        showAlertModal: true
+      });
+    } finally {
+      this.setState({ isCreatingQuestions: false });
+    }
   };
 
   loadPresetQuestions = (presetQuestions) => {
@@ -258,7 +283,7 @@ class BatchCreateQuestion extends Component {
   };
 
   render() {
-    const { questions, showConfirmModal, showAlertModal, modalConfig, alertConfig } = this.state;
+    const { questions, showConfirmModal, showAlertModal, modalConfig, alertConfig, showLoadingModal, isCreatingQuestions } = this.state;
 
     return (
       <div>
@@ -538,6 +563,7 @@ class BatchCreateQuestion extends Component {
             <button 
               type="submit" 
               className="btn btn-primary" 
+              disabled={isCreatingQuestions}
               style={{ 
                 padding: '12px 32px', 
                 fontSize: '1rem',
@@ -547,7 +573,7 @@ class BatchCreateQuestion extends Component {
                 gap: '6px'
               }}
             >
-              🚀 <span>Create All Questions</span>
+              {isCreatingQuestions ? 'Creating...' : '🚀'} <span>{isCreatingQuestions ? 'Creating Questions...' : 'Create All Questions'}</span>
             </button>
           </div>
         </form>
@@ -570,6 +596,31 @@ class BatchCreateQuestion extends Component {
           message={alertConfig.message}
           variant={alertConfig.variant}
         />
+
+        {/* Loading Modal */}
+        {showLoadingModal && (
+          <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}}
+               tabIndex="-1">
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    📝 Creating Questions...
+                  </h5>
+                </div>
+                <div className="modal-body text-center">
+                  <div className="spinner-border text-primary mb-3" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p>
+                    Please wait while your questions are being created and saved to the blockchain...
+                  </p>
+                  <small className="text-muted">This may take a few moments.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
