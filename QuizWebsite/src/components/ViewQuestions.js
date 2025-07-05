@@ -31,7 +31,9 @@ class ViewQuestions extends Component {
       // Success modal state
       showSuccessModal: false,
       successMessage: '',
-      successTitle: 'Success'
+      successTitle: 'Success',
+      // Delete all modal state
+      showDeleteAllModal: false
     };
   }
 
@@ -75,6 +77,54 @@ class ViewQuestions extends Component {
       successMessage: '',
       successTitle: 'Success'
     });
+  };
+
+  // Handle delete all questions
+  handleDeleteAll = () => {
+    this.setState({
+      showDeleteAllModal: true
+    });
+  };
+
+  confirmDeleteAll = async () => {
+    const { questions } = this.props;
+    
+    if (questions.length === 0) {
+      this.setState({ showDeleteAllModal: false });
+      return;
+    }
+
+    // Show loading modal
+    this.setState({
+      isOperating: true,
+      showLoadingModal: true,
+      currentOperation: 'deleteAll',
+      showDeleteAllModal: false
+    });
+
+    try {
+      // Delete all questions one by one
+      await quizContract.methods.deleteAllQuizzes().send({
+        from: this.state.currentAddress,
+      });
+
+      // Call parent component to update state
+      this.props.onDeleteAllQuestions();
+
+      this.setState({
+        showLoadingModal: false
+      });
+      
+      // Show success modal
+      this.showSuccess(`Successfully deleted ${questions.length} question${questions.length > 1 ? 's' : ''}!`, 'All Questions Deleted');
+    } catch (error) {
+      this.setState({
+        showLoadingModal: false
+      });
+      this.showAlert('Failed to delete all questions: ' + error.message, 'Delete All Failed', 'danger');
+    } finally {
+      this.setState({ isOperating: false });
+    }
   };
 
   // Get unique categories and difficulties for filters
@@ -303,7 +353,8 @@ class ViewQuestions extends Component {
       alertVariant,
       showSuccessModal,
       successMessage,
-      successTitle
+      successTitle,
+      showDeleteAllModal
     } = this.state;
 
     const filteredQuestions = this.getFilteredAndSortedQuestions();
@@ -323,9 +374,28 @@ class ViewQuestions extends Component {
   return (
     <div>
       <div className="card" style={{ marginBottom: '30px' }}>
-        <h2 style={{ marginBottom: '30px', color: '#2d3748', fontSize: '1.2rem' }}>
-          📚 Question Library ({filteredQuestions.length} of {questions.length})
-        </h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+          <h2 style={{ margin: 0, color: '#2d3748', fontSize: '1.2rem' }}>
+            📚 Question Library ({filteredQuestions.length} of {questions.length})
+          </h2>
+
+          {questions.length > 0 && (
+            <button
+              onClick={this.handleDeleteAll}
+              className="btn btn-danger"
+              style={{
+                padding: '8px 16px',
+                fontSize: '0.9rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+              disabled={isOperating}
+            >
+              🗑️ Delete All Questions
+            </button>
+          )}
+        </div>
         
         {/* Filters and Sort */}
         <div style={{ 
@@ -586,6 +656,17 @@ class ViewQuestions extends Component {
         confirmVariant="danger"
       />
 
+      {/* Delete All Confirmation Modal */}
+      <ConfirmModal
+        show={showDeleteAllModal}
+        onHide={() => this.setState({ showDeleteAllModal: false })}
+        title="Delete All Questions"
+        message={`Are you sure you want to delete all ${questions.length} question${questions.length > 1 ? 's' : ''}? This action cannot be undone and will permanently remove all questions from the blockchain.`}
+        onConfirm={this.confirmDeleteAll}
+        confirmText="Delete All"
+        confirmVariant="danger"
+      />
+
       {/* Loading Modal */}
       {showLoadingModal && (
         <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}}
@@ -594,7 +675,9 @@ class ViewQuestions extends Component {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
-                  {currentOperation === 'edit' ? '✏️ Updating Question...' : '🗑️ Deleting Question...'}
+                  {currentOperation === 'edit' ? '✏️ Updating Question...' : 
+                   currentOperation === 'delete' ? '🗑️ Deleting Question...' : 
+                   '🗑️ Deleting All Questions...'}
                 </h5>
               </div>
               <div className="modal-body text-center">
@@ -604,7 +687,9 @@ class ViewQuestions extends Component {
                 <p>
                   {currentOperation === 'edit'
                     ? 'Please wait while your question is being updated on the blockchain...'
-                    : 'Please wait while your question is being deleted from the blockchain...'}
+                    : currentOperation === 'delete' 
+                    ? 'Please wait while your question is being deleted from the blockchain...'
+                    : 'Please wait while all questions are being deleted from the blockchain...'}
                 </p>
                 <small className="text-muted">This may take a few moments.</small>
               </div>

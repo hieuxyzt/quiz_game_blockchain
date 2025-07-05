@@ -68,6 +68,10 @@ class App extends Component {
     }));
   };
 
+  deleteAllQuestions = () => {
+    this.setState({ questions: [] });
+  };
+
   renderCurrentView = () => {
     const { currentView, questions } = this.state;
     switch (currentView) {
@@ -81,6 +85,7 @@ class App extends Component {
             questions={questions} 
             onDeleteQuestion={this.deleteQuestion}
             onEditQuestion={this.editQuestion}
+            onDeleteAllQuestions={this.deleteAllQuestions}
           />
         );
       case 'nft':
