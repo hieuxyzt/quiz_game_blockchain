@@ -28,3 +28,4 @@ const input = {
 
 const moduleExport = JSON.parse(solc.compile(JSON.stringify(input))).contracts['Quiz.sol'].Quiz;
 module.exports = moduleExport;
+console.log('ABI:', JSON.stringify(moduleExport.abi, null, 2));
