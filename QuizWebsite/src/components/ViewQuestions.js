@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ConfirmModal from './ConfirmModal';
+import AlertModal from './AlertModal';
 
 import quizContract from "../contract/quizContract";
 import web3 from "../contract/web3";
@@ -17,7 +18,20 @@ class ViewQuestions extends Component {
       // Modal state for delete confirmation
       showDeleteModal: false,
       questionToDelete: null,
-      currentAddress: ''
+      currentAddress: '',
+      // Loading modal state
+      showLoadingModal: false,
+      isOperating: false,
+      currentOperation: '', // 'edit' or 'delete'
+      // Alert modal state
+      showAlertModal: false,
+      alertMessage: '',
+      alertTitle: 'Alert',
+      alertVariant: 'warning',
+      // Success modal state
+      showSuccessModal: false,
+      successMessage: '',
+      successTitle: 'Success'
     };
   }
 
@@ -26,6 +40,42 @@ class ViewQuestions extends Component {
     const currentAddress = accounts[0];
     this.setState({currentAddress});
   }
+
+  // Helper method to show alert modal
+  showAlert = (message, title = 'Alert', variant = 'warning') => {
+    this.setState({
+      showAlertModal: true,
+      alertMessage: message,
+      alertTitle: title,
+      alertVariant: variant
+    });
+  };
+
+  hideAlert = () => {
+    this.setState({
+      showAlertModal: false,
+      alertMessage: '',
+      alertTitle: 'Alert',
+      alertVariant: 'warning'
+    });
+  };
+
+  // Helper method to show success modal
+  showSuccess = (message, title = 'Success') => {
+    this.setState({
+      showSuccessModal: true,
+      successMessage: message,
+      successTitle: title
+    });
+  };
+
+  hideSuccess = () => {
+    this.setState({
+      showSuccessModal: false,
+      successMessage: '',
+      successTitle: 'Success'
+    });
+  };
 
   // Get unique categories and difficulties for filters
   getCategories = () => {
@@ -124,19 +174,19 @@ class ViewQuestions extends Component {
   saveEdit = async () => {
     // Validation
     if (!this.state.editForm.question.trim()) {
-      alert('Please enter a question');
+      this.showAlert('Please enter a question', 'Validation Error', 'warning');
       return;
     }
     
     const validOptions = this.state.editForm.options.filter(option => option.trim() !== '');
     if (validOptions.length < 2) {
-      alert('Please provide at least 2 options');
+      this.showAlert('Please provide at least 2 options', 'Validation Error', 'warning');
       return;
     }
     
     if (!this.state.editForm.options[this.state.editForm.correctAnswer] || 
         !this.state.editForm.options[this.state.editForm.correctAnswer].trim()) {
-      alert('Please select a valid correct answer');
+      this.showAlert('Please select a valid correct answer', 'Validation Error', 'warning');
       return;
     }
 
@@ -150,15 +200,35 @@ class ViewQuestions extends Component {
       createdAt: this.props.questions.find(q => q.id === this.state.editingQuestion).createdAt
     };
 
-    await quizContract.methods.addAllQuizzes([updatedQuestion]).send({
-      from: this.state.currentAddress,
+    // Show loading modal
+    this.setState({
+      isOperating: true,
+      showLoadingModal: true,
+      currentOperation: 'edit'
     });
 
-    this.props.onEditQuestion(this.state.editingQuestion, updatedQuestion);
-    this.setState({
-      editingQuestion: null,
-      editForm: {}
-    });
+    try {
+      await quizContract.methods.updateQuiz(this.state.editForm.id, updatedQuestion).send({
+        from: this.state.currentAddress,
+      });
+
+      this.props.onEditQuestion(this.state.editingQuestion, updatedQuestion);
+      this.setState({
+        editingQuestion: null,
+        editForm: {},
+        showLoadingModal: false
+      });
+      
+      // Show success modal
+      this.showSuccess('Question has been updated successfully!', 'Question Updated');
+    } catch (error) {
+      this.setState({
+        showLoadingModal: false
+      });
+      this.showAlert('Failed to update question: ' + error.message, 'Update Failed', 'danger');
+    } finally {
+      this.setState({ isOperating: false });
+    }
   };
 
   handleDelete = (questionId) => {
@@ -170,15 +240,38 @@ class ViewQuestions extends Component {
 
   confirmDelete = async () => {
     if (this.state.questionToDelete) {
-      await quizContract.methods.deleteQuiz(this.state.questionToDelete).send({
-        from: this.state.currentAddress,
-      });
-
-      this.props.onDeleteQuestion(this.state.questionToDelete);
+      // Show loading modal
       this.setState({
-        questionToDelete: null,
+        isOperating: true,
+        showLoadingModal: true,
+        currentOperation: 'delete',
         showDeleteModal: false
       });
+
+      try {
+        await quizContract.methods.deleteQuiz(this.state.questionToDelete).send({
+          from: this.state.currentAddress,
+        });
+
+        this.props.onDeleteQuestion(this.state.questionToDelete);
+        this.setState({
+          questionToDelete: null,
+          showLoadingModal: false
+        });
+        
+        // Show success modal
+        this.showSuccess('Question has been deleted successfully!', 'Question Deleted');
+      } catch (error) {
+        this.setState({
+          showLoadingModal: false
+        });
+        this.showAlert('Failed to delete question: ' + error.message, 'Delete Failed', 'danger');
+        this.setState({
+          questionToDelete: null
+        });
+      } finally {
+        this.setState({ isOperating: false });
+      }
     }
   };
 
@@ -200,7 +293,17 @@ class ViewQuestions extends Component {
       filterCategory, 
       filterDifficulty, 
       sortBy,
-      showDeleteModal 
+      showDeleteModal,
+      showLoadingModal,
+      isOperating,
+      currentOperation,
+      showAlertModal,
+      alertMessage,
+      alertTitle,
+      alertVariant,
+      showSuccessModal,
+      successMessage,
+      successTitle
     } = this.state;
 
     const filteredQuestions = this.getFilteredAndSortedQuestions();
@@ -375,10 +478,18 @@ class ViewQuestions extends Component {
                 </div>
 
                 <div className="question-actions">
-                  <button onClick={this.saveEdit} className="btn btn-success">
-                    💾 Save
+                  <button 
+                    onClick={this.saveEdit} 
+                    className="btn btn-success"
+                    disabled={isOperating}
+                  >
+                    {isOperating && currentOperation === 'edit' ? '🔄 Saving...' : '💾 Save'}
                   </button>
-                  <button onClick={this.cancelEditing} className="btn btn-secondary">
+                  <button 
+                    onClick={this.cancelEditing} 
+                    className="btn btn-secondary"
+                    disabled={isOperating}
+                  >
                     ❌ Cancel
                   </button>
                 </div>
@@ -473,6 +584,51 @@ class ViewQuestions extends Component {
         onConfirm={this.confirmDelete}
         confirmText="Delete"
         confirmVariant="danger"
+      />
+
+      {/* Loading Modal */}
+      {showLoadingModal && (
+        <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}}
+             tabIndex="-1">
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  {currentOperation === 'edit' ? '✏️ Updating Question...' : '🗑️ Deleting Question...'}
+                </h5>
+              </div>
+              <div className="modal-body text-center">
+                <div className="spinner-border text-primary mb-3" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                <p>
+                  {currentOperation === 'edit'
+                    ? 'Please wait while your question is being updated on the blockchain...'
+                    : 'Please wait while your question is being deleted from the blockchain...'}
+                </p>
+                <small className="text-muted">This may take a few moments.</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Alert Modal */}
+      <AlertModal
+        show={showAlertModal}
+        onHide={this.hideAlert}
+        title={alertTitle}
+        message={alertMessage}
+        variant={alertVariant}
+      />
+
+      {/* Success Modal */}
+      <AlertModal
+        show={showSuccessModal}
+        onHide={this.hideSuccess}
+        title={successTitle}
+        message={successMessage}
+        variant="success"
       />
     </div>
     );
