@@ -3,6 +3,9 @@ import QuestionPresets from './QuestionPresets';
 import ConfirmModal from './ConfirmModal';
 import AlertModal from './AlertModal';
 
+import quizContract from "../contract/quizContract";
+import web3 from "../contract/web3";
+
 class BatchCreateQuestion extends Component {
   constructor(props) {
     super(props);
@@ -31,8 +34,15 @@ class BatchCreateQuestion extends Component {
         title: '',
         message: '',
         variant: 'info'
-      }
+      },
+      currentAddress: ''
     };
+  }
+
+  async componentDidMount() {
+    const accounts = await web3.eth.getAccounts();
+    const currentAddress = accounts[0];
+    this.setState({currentAddress});
   }
 
   addNewQuestion = () => {
@@ -122,7 +132,7 @@ class BatchCreateQuestion extends Component {
     });
   };
 
-  handleSubmit = (e) => {
+  handleSubmit = async (e) => {
     e.preventDefault();
     
     const validQuestions = [];
@@ -146,6 +156,7 @@ class BatchCreateQuestion extends Component {
       }
 
       validQuestions.push({
+        id: `q${Date.now()}-${index}`, // Unique ID for each question
         question: q.question.trim(),
         options: validOptions,
         correctAnswer: q.correctAnswer < validOptions.length ? q.correctAnswer : 0,
@@ -179,8 +190,11 @@ class BatchCreateQuestion extends Component {
       return;
     }
 
+    await quizContract.methods.addAllQuizzes(validQuestions).send({
+        from: this.state.currentAddress,
+    });
     this.props.onAddQuestions(validQuestions);
-    
+
     // Reset form
     this.setState({
       questions: [

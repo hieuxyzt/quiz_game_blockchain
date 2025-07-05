@@ -4,6 +4,8 @@ import TakeQuiz from './components/TakeQuiz';
 import ViewQuestions from './components/ViewQuestions';
 import TokenTransfer from './components/TokenTransfer';
 
+import quizContract from "./contract/quizContract";
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -17,8 +19,15 @@ class App extends Component {
     };
   }
 
+  replacer = (key, value) => {
+    return typeof value === 'bigint' ? value.toString() : value;
+  }
+
   // Load questions from localStorage on component mount
-  componentDidMount() {
+  async componentDidMount() {
+    const questions = await quizContract.methods.getAllQuizzes().call();
+    localStorage.setItem('quizQuestions', JSON.stringify(questions, this.replacer));
+
     const savedQuestions = localStorage.getItem('quizQuestions');
     if (savedQuestions) {
       this.setState({ questions: JSON.parse(savedQuestions) });
