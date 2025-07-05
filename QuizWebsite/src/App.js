@@ -1,65 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { Component } from 'react';
 import BatchCreateQuestion from './components/BatchCreateQuestion';
 import TakeQuiz from './components/TakeQuiz';
 import ViewQuestions from './components/ViewQuestions';
 import TokenTransfer from './components/TokenTransfer';
 
-function App() {
-  // Load current view from localStorage or default to 'quiz'
-  const [currentView, setCurrentView] = useState(() => {
+class App extends Component {
+  constructor(props) {
+    super(props);
+
+    // Load current view from localStorage or default to 'quiz'
     const savedView = localStorage.getItem('currentView');
-    return savedView || 'quiz';
-  });
-  const [questions, setQuestions] = useState([]);
+    
+    this.state = {
+      currentView: savedView || 'quiz',
+      questions: []
+    };
+  }
 
   // Load questions from localStorage on component mount
-  useEffect(() => {
+  componentDidMount() {
     const savedQuestions = localStorage.getItem('quizQuestions');
     if (savedQuestions) {
-      setQuestions(JSON.parse(savedQuestions));
+      this.setState({ questions: JSON.parse(savedQuestions) });
     }
-  }, []);
+  }
 
   // Save questions to localStorage whenever questions change
-  useEffect(() => {
-    localStorage.setItem('quizQuestions', JSON.stringify(questions));
-  }, [questions]);
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.questions !== this.state.questions) {
+      localStorage.setItem('quizQuestions', JSON.stringify(this.state.questions));
+    }
+    if (prevState.currentView !== this.state.currentView) {
+      localStorage.setItem('currentView', this.state.currentView);
+    }
+  }
 
-  // Save current view to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('currentView', currentView);
-  }, [currentView]);
-
-  const addQuestions = (newQuestions) => {
+  addQuestions = (newQuestions) => {
     const questionsWithIds = newQuestions.map((question, index) => ({
       ...question,
       id: (Date.now() + index).toString()
     }));
-    setQuestions(prev => [...prev, ...questionsWithIds]);
+    this.setState(prevState => ({
+      questions: [...prevState.questions, ...questionsWithIds]
+    }));
   };
 
-  const deleteQuestion = (questionId) => {
-    setQuestions(prev => prev.filter(q => q.id !== questionId));
+  deleteQuestion = (questionId) => {
+    this.setState(prevState => ({
+      questions: prevState.questions.filter(q => q.id !== questionId)
+    }));
   };
 
-  const editQuestion = (questionId, updatedQuestion) => {
-    setQuestions(prev => 
-      prev.map(q => q.id === questionId ? { ...updatedQuestion, id: questionId } : q)
-    );
+  editQuestion = (questionId, updatedQuestion) => {
+    this.setState(prevState => ({
+      questions: prevState.questions.map(q => 
+        q.id === questionId ? { ...updatedQuestion, id: questionId } : q
+      )
+    }));
   };
 
-  const renderCurrentView = () => {
+  renderCurrentView = () => {
+    const { currentView, questions } = this.state;
     switch (currentView) {
       case 'create':
-        return <BatchCreateQuestion onAddQuestions={addQuestions} />;
+        return <BatchCreateQuestion onAddQuestions={this.addQuestions} />;
       case 'quiz':
         return <TakeQuiz questions={questions} />;
       case 'view':
         return (
           <ViewQuestions 
             questions={questions} 
-            onDeleteQuestion={deleteQuestion}
-            onEditQuestion={editQuestion}
+            onDeleteQuestion={this.deleteQuestion}
+            onEditQuestion={this.editQuestion}
           />
         );
       case 'nft':
@@ -69,7 +81,14 @@ function App() {
     }
   };
 
-  return (
+  setCurrentView = (view) => {
+    this.setState({ currentView: view });
+  };
+
+  render() {
+    const { currentView, questions } = this.state;
+
+    return (
     <div className="d-flex flex-column flex-md-row vh-100">
       {/* Left Sidebar - Desktop */}
       <nav className="bg-primary text-white position-fixed sidebar-desktop" style={{ width: '250px', height: '100vh', zIndex: 1000 }}>
@@ -83,7 +102,7 @@ function App() {
             className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
               currentView === 'quiz' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
             }`}
-            onClick={() => setCurrentView('quiz')}
+            onClick={() => this.setCurrentView('quiz')}
             style={{ 
               transition: 'all 0.3s ease'
             }}
@@ -108,7 +127,7 @@ function App() {
             className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
               currentView === 'create' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
             }`}
-            onClick={() => setCurrentView('create')}
+            onClick={() => this.setCurrentView('create')}
             style={{ 
               transition: 'all 0.3s ease'
             }}
@@ -133,7 +152,7 @@ function App() {
             className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 position-relative ${
               currentView === 'view' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
             }`}
-            onClick={() => setCurrentView('view')}
+            onClick={() => this.setCurrentView('view')}
             style={{ 
               transition: 'all 0.3s ease'
             }}
@@ -161,7 +180,7 @@ function App() {
             className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
               currentView === 'nft' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
             }`}
-            onClick={() => setCurrentView('nft')}
+            onClick={() => this.setCurrentView('nft')}
             style={{ 
               transition: 'all 0.3s ease'
             }}
@@ -195,7 +214,7 @@ function App() {
             className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${
               currentView === 'quiz' ? 'bg-light bg-opacity-25 fw-semibold' : ''
             }`}
-            onClick={() => setCurrentView('quiz')}
+            onClick={() => this.setCurrentView('quiz')}
             style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
           >
             <span className="fs-6">🎯</span>
@@ -206,7 +225,7 @@ function App() {
             className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${
               currentView === 'create' ? 'bg-light bg-opacity-25 fw-semibold' : ''
             }`}
-            onClick={() => setCurrentView('create')}
+            onClick={() => this.setCurrentView('create')}
             style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
           >
             <span className="fs-6">📝</span>
@@ -217,7 +236,7 @@ function App() {
             className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 position-relative ${
               currentView === 'view' ? 'bg-light bg-opacity-25 fw-semibold' : ''
             }`}
-            onClick={() => setCurrentView('view')}
+            onClick={() => this.setCurrentView('view')}
             style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
           >
             <span className="fs-6">📚</span>
@@ -231,7 +250,7 @@ function App() {
             className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${
               currentView === 'nft' ? 'bg-light bg-opacity-25 fw-semibold' : ''
             }`}
-            onClick={() => setCurrentView('nft')}
+            onClick={() => this.setCurrentView('nft')}
             style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
           >
             <span className="fs-6">🎨</span>
@@ -248,12 +267,13 @@ function App() {
 
         <main className="p-4 flex-grow-1 overflow-auto">
           <div className="container-fluid" style={{ maxWidth: '1200px' }}>
-            {renderCurrentView()}
+            {this.renderCurrentView()}
           </div>
         </main>
       </div>
     </div>
-  );
+    );
+  }
 }
 
 export default App;

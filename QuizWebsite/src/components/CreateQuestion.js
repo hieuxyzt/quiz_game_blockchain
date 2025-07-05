@@ -1,88 +1,98 @@
-import React, { useState } from 'react';
+import React, { Component } from 'react';
 
-const CreateQuestion = ({ onAddQuestion }) => {
-  const [question, setQuestion] = useState('');
-  const [options, setOptions] = useState(['', '', '', '']);
-  const [correctAnswer, setCorrectAnswer] = useState(0);
-  const [difficulty, setDifficulty] = useState('medium');
-  const [category, setCategory] = useState('general');
+class CreateQuestion extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      question: '',
+      options: ['', '', '', ''],
+      correctAnswer: 0,
+      difficulty: 'medium',
+      category: 'general'
+    };
+  }
 
-  const handleOptionChange = (index, value) => {
-    const newOptions = [...options];
+  handleOptionChange = (index, value) => {
+    const newOptions = [...this.state.options];
     newOptions[index] = value;
-    setOptions(newOptions);
+    this.setState({ options: newOptions });
   };
 
-  const addOption = () => {
-    if (options.length < 6) {
-      setOptions([...options, '']);
+  addOption = () => {
+    if (this.state.options.length < 6) {
+      this.setState({ options: [...this.state.options, ''] });
     }
   };
 
-  const removeOption = (index) => {
-    if (options.length > 2) {
-      const newOptions = options.filter((_, i) => i !== index);
-      setOptions(newOptions);
-      if (correctAnswer >= newOptions.length) {
-        setCorrectAnswer(0);
+  removeOption = (index) => {
+    if (this.state.options.length > 2) {
+      const newOptions = this.state.options.filter((_, i) => i !== index);
+      this.setState({ options: newOptions });
+      if (this.state.correctAnswer >= newOptions.length) {
+        this.setState({ correctAnswer: 0 });
       }
     }
   };
 
-  const handleSubmit = (e) => {
+  handleSubmit = (e) => {
     e.preventDefault();
     
     // Validation
-    if (!question.trim()) {
+    if (!this.state.question.trim()) {
       alert('Please enter a question');
       return;
     }
     
-    const validOptions = options.filter(option => option.trim() !== '');
+    const validOptions = this.state.options.filter(option => option.trim() !== '');
     if (validOptions.length < 2) {
       alert('Please provide at least 2 options');
       return;
     }
     
-    if (!options[correctAnswer] || !options[correctAnswer].trim()) {
+    if (!this.state.options[this.state.correctAnswer] || !this.state.options[this.state.correctAnswer].trim()) {
       alert('Please select a valid correct answer');
       return;
     }
 
     const newQuestion = {
-      question: question.trim(),
+      question: this.state.question.trim(),
       options: validOptions,
-      correctAnswer: correctAnswer < validOptions.length ? correctAnswer : 0,
-      difficulty,
-      category,
+      correctAnswer: this.state.correctAnswer < validOptions.length ? this.state.correctAnswer : 0,
+      difficulty: this.state.difficulty,
+      category: this.state.category,
       createdAt: new Date().toISOString()
     };
 
-    onAddQuestion(newQuestion);
+    this.props.onAddQuestions(newQuestion);
     
     // Reset form
-    setQuestion('');
-    setOptions(['', '', '', '']);
-    setCorrectAnswer(0);
-    setDifficulty('medium');
-    setCategory('general');
+    this.setState({
+      question: '',
+      options: ['', '', '', ''],
+      correctAnswer: 0,
+      difficulty: 'medium',
+      category: 'general'
+    });
     
     alert('Question added successfully!');
   };
 
-  return (
+  render() {
+    const { question, options, correctAnswer, difficulty, category } = this.state;
+
+    return (
     <div className="card">
       <h2 style={{ marginBottom: '30px', color: '#2d3748', fontSize: '1.2rem' }}>
         📝 Create New Question
       </h2>
       
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={this.handleSubmit}>
         <div className="form-group">
           <label htmlFor="question">Question</label>
           <textarea
             id="question"
             value={question}
-            onChange={(e) => setQuestion(e.target.value)}
+            onChange={(e) => this.setState({ question: e.target.value })}
             placeholder="Enter your question here..."
             rows="3"
             required
@@ -95,7 +105,7 @@ const CreateQuestion = ({ onAddQuestion }) => {
             <select
               id="category"
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => this.setState({ category: e.target.value })}
             >
               <option value="general">General Knowledge</option>
               <option value="science">Science</option>
@@ -113,7 +123,7 @@ const CreateQuestion = ({ onAddQuestion }) => {
             <select
               id="difficulty"
               value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value)}
+              onChange={(e) => this.setState({ difficulty: e.target.value })}
             >
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
@@ -131,19 +141,19 @@ const CreateQuestion = ({ onAddQuestion }) => {
                   type="radio"
                   name="correctAnswer"
                   checked={correctAnswer === index}
-                  onChange={() => setCorrectAnswer(index)}
+                  onChange={() => this.setState({ correctAnswer: index })}
                   title="Mark as correct answer"
                 />
                 <input
                   type="text"
                   value={option}
-                  onChange={(e) => handleOptionChange(index, e.target.value)}
+                  onChange={(e) => this.handleOptionChange(index, e.target.value)}
                   placeholder={`Option ${index + 1}`}
                 />
                 {options.length > 2 && (
                   <button
                     type="button"
-                    onClick={() => removeOption(index)}
+                    onClick={() => this.removeOption(index)}
                     className="btn btn-danger"
                     style={{ padding: '8px 12px', fontSize: '0.8rem' }}
                   >
@@ -157,7 +167,7 @@ const CreateQuestion = ({ onAddQuestion }) => {
           {options.length < 6 && (
             <button
               type="button"
-              onClick={addOption}
+              onClick={this.addOption}
               className="btn btn-secondary"
               style={{ marginTop: '10px' }}
             >
@@ -173,7 +183,8 @@ const CreateQuestion = ({ onAddQuestion }) => {
         </div>
       </form>
     </div>
-  );
-};
+    );
+  }
+}
 
 export default CreateQuestion;

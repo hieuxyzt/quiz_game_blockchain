@@ -1,42 +1,52 @@
-import React, { useEffect } from 'react';
+import React, { Component } from 'react';
 
-const AlertModal = ({ 
-  show, 
-  onHide, 
-  title = "Alert", 
-  message = "",
-  variant = "info",
-  size = ""
-}) => {
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onHide();
+class AlertModal extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  componentDidMount() {
+    this.setupEventListeners();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.show !== this.props.show) {
+      this.setupEventListeners();
     }
-  };
+  }
 
-  useEffect(() => {
-    const handleKeyDownEvent = (e) => {
-      if (e.key === 'Escape') {
-        onHide();
-      }
-    };
+  componentWillUnmount() {
+    this.cleanupEventListeners();
+  }
 
-    if (show) {
-      document.addEventListener('keydown', handleKeyDownEvent);
+  setupEventListeners = () => {
+    if (this.props.show) {
+      document.addEventListener('keydown', this.handleKeyDownEvent);
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
+  };
 
-    return () => {
-      document.removeEventListener('keydown', handleKeyDownEvent);
-      document.body.style.overflow = 'unset';
-    };
-  }, [show, onHide]);
+  cleanupEventListeners = () => {
+    document.removeEventListener('keydown', this.handleKeyDownEvent);
+    document.body.style.overflow = 'unset';
+  };
 
-  if (!show) return null;
+  handleKeyDownEvent = (e) => {
+    if (e.key === 'Escape') {
+      this.props.onHide();
+    }
+  };
 
-  const getIcon = () => {
+  handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      this.props.onHide();
+    }
+  };
+
+  getIcon = () => {
+    const { variant } = this.props;
     switch (variant) {
       case 'success':
         return '✅';
@@ -50,7 +60,8 @@ const AlertModal = ({
     }
   };
 
-  const getHeaderClass = () => {
+  getHeaderClass = () => {
+    const { variant } = this.props;
     switch (variant) {
       case 'success':
         return 'text-success';
@@ -64,7 +75,12 @@ const AlertModal = ({
     }
   };
 
-  return (
+  render() {
+    const { show, title = "Alert", message = "", size = "" } = this.props;
+
+    if (!show) return null;
+
+    return (
     <div 
       className="modal fade show" 
       style={{ 
@@ -74,18 +90,17 @@ const AlertModal = ({
       }} 
       tabIndex="-1" 
       role="dialog"
-      onClick={handleBackdropClick}
+      onClick={this.handleBackdropClick}
     >
       <div className={`modal-dialog modal-sm modal-dialog-centered`} role="document">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className={`modal-title ${getHeaderClass()}`}>
-              {getIcon()} {title}
-            </h5>
-            <button 
-              type="button" 
-              className="btn-close" 
-              onClick={onHide}
+            <h5 className={`modal-title ${this.getHeaderClass()}`}>
+              {this.getIcon()} {title}
+            </h5>            <button
+              type="button"
+              className="btn-close"
+              onClick={this.props.onHide}
               aria-label="Close"
             ></button>
           </div>
@@ -99,8 +114,8 @@ const AlertModal = ({
           <div className="modal-footer">
             <button 
               type="button" 
-              className={`btn btn-${variant === 'danger' ? 'danger' : 'primary'}`} 
-              onClick={onHide}
+              className={`btn btn-${this.props.variant === 'danger' ? 'danger' : 'primary'}`} 
+              onClick={this.props.onHide}
             >
               OK
             </button>
@@ -108,7 +123,8 @@ const AlertModal = ({
         </div>
       </div>
     </div>
-  );
-};
+    );
+  }
+}
 
 export default AlertModal;

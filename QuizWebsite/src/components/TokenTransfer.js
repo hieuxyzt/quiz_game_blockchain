@@ -39,7 +39,7 @@ class TokenTransfer extends Component {
 
         const accounts = await web3.eth.getAccounts();
         const currentAddress = accounts[0];
-        this.setState({currentAddress})
+        this.setState({currentAddress});
 
         await this.updateUserBalance(currentAddress);
 

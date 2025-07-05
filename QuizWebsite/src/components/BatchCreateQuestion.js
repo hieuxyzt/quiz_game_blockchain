@@ -1,114 +1,134 @@
-import React, { useState } from 'react';
+import React, { Component } from 'react';
 import QuestionPresets from './QuestionPresets';
 import ConfirmModal from './ConfirmModal';
 import AlertModal from './AlertModal';
 
-const BatchCreateQuestion = ({ onAddQuestions }) => {
-  const [questions, setQuestions] = useState([
-    {
-      question: '',
-      options: ['', '', '', ''],
-      correctAnswer: 0,
-      difficulty: 'medium',
-      category: 'general'
-    }
-  ]);
+class BatchCreateQuestion extends Component {
+  constructor(props) {
+    super(props);
 
-  // Modal state
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [showAlertModal, setShowAlertModal] = useState(false);
-  const [modalConfig, setModalConfig] = useState({
-    title: '',
-    message: '',
-    onConfirm: null,
-    confirmText: 'Confirm',
-    confirmVariant: 'primary'
-  });
-  const [alertConfig, setAlertConfig] = useState({
-    title: '',
-    message: '',
-    variant: 'info'
-  });
-
-  const addNewQuestion = () => {
-    setQuestions([
-      ...questions,
-      {
-        question: '',
-        options: ['', '', '', ''],
-        correctAnswer: 0,
-        difficulty: 'medium',
-        category: 'general'
+    this.state = {
+      questions: [
+        {
+          question: '',
+          options: ['', '', '', ''],
+          correctAnswer: 0,
+          difficulty: 'medium',
+          category: 'general'
+        }
+      ],
+      // Modal state
+      showConfirmModal: false,
+      showAlertModal: false,
+      modalConfig: {
+        title: '',
+        message: '',
+        onConfirm: null,
+        confirmText: 'Confirm',
+        confirmVariant: 'primary'
+      },
+      alertConfig: {
+        title: '',
+        message: '',
+        variant: 'info'
       }
-    ]);
+    };
+  }
+
+  addNewQuestion = () => {
+    this.setState(prevState => ({
+      questions: [
+        ...prevState.questions,
+        {
+          question: '',
+          options: ['', '', '', ''],
+          correctAnswer: 0,
+          difficulty: 'medium',
+          category: 'general'
+        }
+      ]
+    }));
   };
 
-  const removeQuestion = (questionIndex) => {
-    if (questions.length > 1) {
-      setModalConfig({
-        title: 'Remove Question',
-        message: `Are you sure you want to remove Question ${questionIndex + 1}? This action cannot be undone.`,
-        onConfirm: () => {
-          setQuestions(questions.filter((_, index) => index !== questionIndex));
+  removeQuestion = (questionIndex) => {
+    if (this.state.questions.length > 1) {
+      this.setState({
+        modalConfig: {
+          title: 'Remove Question',
+          message: `Are you sure you want to remove Question ${questionIndex + 1}? This action cannot be undone.`,
+          onConfirm: () => {
+            this.setState(prevState => ({
+              questions: prevState.questions.filter((_, index) => index !== questionIndex)
+            }));
+          },
+          confirmText: 'Remove',
+          confirmVariant: 'danger'
         },
-        confirmText: 'Remove',
-        confirmVariant: 'danger'
+        showConfirmModal: true
       });
-      setShowConfirmModal(true);
     }
   };
 
-  const updateQuestion = (questionIndex, field, value) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex] = {
-      ...updatedQuestions[questionIndex],
-      [field]: value
-    };
-    setQuestions(updatedQuestions);
-  };
-
-  const updateOption = (questionIndex, optionIndex, value) => {
-    const updatedQuestions = [...questions];
-    const newOptions = [...updatedQuestions[questionIndex].options];
-    newOptions[optionIndex] = value;
-    updatedQuestions[questionIndex] = {
-      ...updatedQuestions[questionIndex],
-      options: newOptions
-    };
-    setQuestions(updatedQuestions);
-  };
-
-  const addOption = (questionIndex) => {
-    const updatedQuestions = [...questions];
-    if (updatedQuestions[questionIndex].options.length < 6) {
+  updateQuestion = (questionIndex, field, value) => {
+    this.setState(prevState => {
+      const updatedQuestions = [...prevState.questions];
       updatedQuestions[questionIndex] = {
         ...updatedQuestions[questionIndex],
-        options: [...updatedQuestions[questionIndex].options, '']
+        [field]: value
       };
-      setQuestions(updatedQuestions);
-    }
+      return { questions: updatedQuestions };
+    });
   };
 
-  const removeOption = (questionIndex, optionIndex) => {
-    const updatedQuestions = [...questions];
-    if (updatedQuestions[questionIndex].options.length > 2) {
-      const newOptions = updatedQuestions[questionIndex].options.filter((_, i) => i !== optionIndex);
+  updateOption = (questionIndex, optionIndex, value) => {
+    this.setState(prevState => {
+      const updatedQuestions = [...prevState.questions];
+      const newOptions = [...updatedQuestions[questionIndex].options];
+      newOptions[optionIndex] = value;
       updatedQuestions[questionIndex] = {
         ...updatedQuestions[questionIndex],
-        options: newOptions,
-        correctAnswer: updatedQuestions[questionIndex].correctAnswer >= newOptions.length ? 0 : updatedQuestions[questionIndex].correctAnswer
+        options: newOptions
       };
-      setQuestions(updatedQuestions);
-    }
+      return { questions: updatedQuestions };
+    });
   };
 
-  const handleSubmit = (e) => {
+  addOption = (questionIndex) => {
+    this.setState(prevState => {
+      const updatedQuestions = [...prevState.questions];
+      if (updatedQuestions[questionIndex].options.length < 6) {
+        updatedQuestions[questionIndex] = {
+          ...updatedQuestions[questionIndex],
+          options: [...updatedQuestions[questionIndex].options, '']
+        };
+      }
+      return { questions: updatedQuestions };
+    });
+  };
+
+  removeOption = (questionIndex, optionIndex) => {
+    this.setState(prevState => {
+      const updatedQuestions = [...prevState.questions];
+      if (updatedQuestions[questionIndex].options.length > 2) {
+        const newOptions = updatedQuestions[questionIndex].options.filter((_, i) => i !== optionIndex);
+        updatedQuestions[questionIndex] = {
+          ...updatedQuestions[questionIndex],
+          options: newOptions,
+          correctAnswer: updatedQuestions[questionIndex].correctAnswer >= newOptions.length ? 0 : updatedQuestions[questionIndex].correctAnswer
+        };
+        return { questions: updatedQuestions };
+      }
+      return prevState;
+    });
+  };
+
+  handleSubmit = (e) => {
     e.preventDefault();
     
     const validQuestions = [];
     const errors = [];
 
-    questions.forEach((q, index) => {
+    this.state.questions.forEach((q, index) => {
       if (!q.question.trim()) {
         errors.push(`Question ${index + 1}: Please enter a question`);
         return;
@@ -136,85 +156,99 @@ const BatchCreateQuestion = ({ onAddQuestions }) => {
     });
 
     if (errors.length > 0) {
-      setAlertConfig({
-        title: 'Validation Errors',
-        message: 'Please fix the following errors:\n\n' + errors.join('\n'),
-        variant: 'danger'
+      this.setState({
+        alertConfig: {
+          title: 'Validation Errors',
+          message: 'Please fix the following errors:\n\n' + errors.join('\n'),
+          variant: 'danger'
+        },
+        showAlertModal: true
       });
-      setShowAlertModal(true);
       return;
     }
 
     if (validQuestions.length === 0) {
-      setAlertConfig({
-        title: 'No Valid Questions',
-        message: 'Please create at least one valid question',
-        variant: 'warning'
+      this.setState({
+        alertConfig: {
+          title: 'No Valid Questions',
+          message: 'Please create at least one valid question',
+          variant: 'warning'
+        },
+        showAlertModal: true
       });
-      setShowAlertModal(true);
       return;
     }
 
-    onAddQuestions(validQuestions);
+    this.props.onAddQuestions(validQuestions);
     
     // Reset form
-    setQuestions([
-      {
-        question: '',
-        options: ['', '', '', ''],
-        correctAnswer: 0,
-        difficulty: 'medium',
-        category: 'general'
-      }
-    ]);
-    
-    setAlertConfig({
-      title: 'Success!',
-      message: `${validQuestions.length} question(s) added successfully!`,
-      variant: 'success'
+    this.setState({
+      questions: [
+        {
+          question: '',
+          options: ['', '', '', ''],
+          correctAnswer: 0,
+          difficulty: 'medium',
+          category: 'general'
+        }
+      ],
+      alertConfig: {
+        title: 'Success!',
+        message: `${validQuestions.length} question(s) added successfully!`,
+        variant: 'success'
+      },
+      showAlertModal: true
     });
-    setShowAlertModal(true);
   };
 
-  const loadPresetQuestions = (presetQuestions) => {
+  loadPresetQuestions = (presetQuestions) => {
     // Validate preset questions
     if (!presetQuestions || !Array.isArray(presetQuestions) || presetQuestions.length === 0) {
-      setAlertConfig({
-        title: 'Invalid Preset',
-        message: 'Invalid preset questions data. Please try again.',
-        variant: 'danger'
+      this.setState({
+        alertConfig: {
+          title: 'Invalid Preset',
+          message: 'Invalid preset questions data. Please try again.',
+          variant: 'danger'
+        },
+        showAlertModal: true
       });
-      setShowAlertModal(true);
       return;
     }
 
     // Show confirmation modal with the preset questions captured in closure
-    setModalConfig({
-      title: 'Load Preset Questions',
-      message: `This will replace your current ${questions.length} question(s) with ${presetQuestions.length} preset questions. Continue?`,
-      onConfirm: () => {
-        // Load the preset questions directly from the closure
-        setQuestions(presetQuestions);
-        setAlertConfig({
-          title: 'Questions Loaded!',
-          message: `Successfully loaded ${presetQuestions.length} preset questions.`,
-          variant: 'success'
-        });
-        setShowAlertModal(true);
+    this.setState({
+      modalConfig: {
+        title: 'Load Preset Questions',
+        message: `This will replace your current ${this.state.questions.length} question(s) with ${presetQuestions.length} preset questions. Continue?`,
+        onConfirm: () => {
+          // Load the preset questions directly from the closure
+          this.setState({
+            questions: presetQuestions,
+            alertConfig: {
+              title: 'Questions Loaded!',
+              message: `Successfully loaded ${presetQuestions.length} preset questions.`,
+              variant: 'success'
+            },
+            showAlertModal: true
+          });
+        },
+        confirmText: 'Load Questions',
+        confirmVariant: 'primary'
       },
-      confirmText: 'Load Questions',
-      confirmVariant: 'primary'
+      showConfirmModal: true
     });
-    setShowConfirmModal(true);
   };
 
-  const handleModalHide = () => {
-    setShowConfirmModal(false);
+  handleModalHide = () => {
+    this.setState({ showConfirmModal: false });
   };
 
-  return (
-    <div>
-      <QuestionPresets onLoadPreset={loadPresetQuestions} />
+  render() {
+    const { questions, showConfirmModal, showAlertModal, modalConfig, alertConfig } = this.state;
+
+    return (
+      <div>
+        <QuestionPresets onLoadPreset={this.loadPresetQuestions} />
       
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
@@ -233,7 +267,7 @@ const BatchCreateQuestion = ({ onAddQuestions }) => {
           </span>
         </div>
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={this.handleSubmit}>
           {questions.map((question, questionIndex) => (
             <div 
               key={questionIndex} 
@@ -284,7 +318,7 @@ const BatchCreateQuestion = ({ onAddQuestions }) => {
                 {questions.length > 1 && (
                   <button
                     type="button"
-                    onClick={() => removeQuestion(questionIndex)}
+                    onClick={() => this.removeQuestion(questionIndex)}
                     className="btn btn-danger"
                     style={{ 
                       padding: '6px 10px', 
@@ -305,7 +339,7 @@ const BatchCreateQuestion = ({ onAddQuestions }) => {
                 <textarea
                   id={`question-${questionIndex}`}
                   value={question.question}
-                  onChange={(e) => updateQuestion(questionIndex, 'question', e.target.value)}
+                  onChange={(e) => this.updateQuestion(questionIndex, 'question', e.target.value)}
                   placeholder="Enter your question here..."
                   rows="3"
                   required
@@ -339,7 +373,7 @@ const BatchCreateQuestion = ({ onAddQuestions }) => {
                   <select
                     id={`category-${questionIndex}`}
                     value={question.category}
-                    onChange={(e) => updateQuestion(questionIndex, 'category', e.target.value)}
+                    onChange={(e) => this.updateQuestion(questionIndex, 'category', e.target.value)}
                     style={{ 
                       width: '100%',
                       fontSize: '0.9rem',
@@ -367,7 +401,7 @@ const BatchCreateQuestion = ({ onAddQuestions }) => {
                   <select
                     id={`difficulty-${questionIndex}`}
                     value={question.difficulty}
-                    onChange={(e) => updateQuestion(questionIndex, 'difficulty', e.target.value)}
+                    onChange={(e) => this.updateQuestion(questionIndex, 'difficulty', e.target.value)}
                     style={{ 
                       width: '100%',
                       fontSize: '0.9rem',
@@ -405,14 +439,14 @@ const BatchCreateQuestion = ({ onAddQuestions }) => {
                         type="radio"
                         name={`correctAnswer-${questionIndex}`}
                         checked={question.correctAnswer === optionIndex}
-                        onChange={() => updateQuestion(questionIndex, 'correctAnswer', optionIndex)}
+                        onChange={() => this.updateQuestion(questionIndex, 'correctAnswer', optionIndex)}
                         title="Mark as correct answer"
                         style={{ margin: 0 }}
                       />
                       <input
                         type="text"
                         value={option}
-                        onChange={(e) => updateOption(questionIndex, optionIndex, e.target.value)}
+                        onChange={(e) => this.updateOption(questionIndex, optionIndex, e.target.value)}
                         placeholder={`Option ${optionIndex + 1}`}
                         style={{
                           flex: 1,
@@ -426,7 +460,7 @@ const BatchCreateQuestion = ({ onAddQuestions }) => {
                       {question.options.length > 2 && (
                         <button
                           type="button"
-                          onClick={() => removeOption(questionIndex, optionIndex)}
+                          onClick={() => this.removeOption(questionIndex, optionIndex)}
                           style={{ 
                             padding: '4px 6px', 
                             fontSize: '0.7rem',
@@ -454,7 +488,7 @@ const BatchCreateQuestion = ({ onAddQuestions }) => {
                 {question.options.length < 6 && (
                   <button
                     type="button"
-                    onClick={() => addOption(questionIndex)}
+                    onClick={() => this.addOption(questionIndex)}
                     className="btn btn-secondary"
                     style={{ 
                       marginTop: '8px',
@@ -473,7 +507,7 @@ const BatchCreateQuestion = ({ onAddQuestions }) => {
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '25px' }}>
             <button
               type="button"
-              onClick={addNewQuestion}
+              onClick={this.addNewQuestion}
               className="btn btn-secondary"
               style={{ 
                 padding: '12px 24px', 
@@ -507,23 +541,24 @@ const BatchCreateQuestion = ({ onAddQuestions }) => {
 
       <ConfirmModal
         show={showConfirmModal}
-        onHide={handleModalHide}
+        onHide={this.handleModalHide}
         title={modalConfig.title}
         message={modalConfig.message}
         onConfirm={modalConfig.onConfirm}
         confirmText={modalConfig.confirmText}
         confirmVariant={modalConfig.confirmVariant}
-      />
+        />
 
-      <AlertModal
-        show={showAlertModal}
-        onHide={() => setShowAlertModal(false)}
-        title={alertConfig.title}
-        message={alertConfig.message}
-        variant={alertConfig.variant}
-      />
-    </div>
-  );
-};
+        <AlertModal
+          show={showAlertModal}
+          onHide={() => this.setState({ showAlertModal: false })}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          variant={alertConfig.variant}
+        />
+      </div>
+    );
+  }
+}
 
 export default BatchCreateQuestion;

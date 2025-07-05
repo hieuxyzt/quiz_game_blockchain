@@ -1,31 +1,41 @@
-import React, { useState } from 'react';
+import React, { Component } from 'react';
 import ConfirmModal from './ConfirmModal';
 
-const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
-  const [editingQuestion, setEditingQuestion] = useState(null);
-  const [editForm, setEditForm] = useState({});
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [filterDifficulty, setFilterDifficulty] = useState('all');
-  const [sortBy, setSortBy] = useState('newest');
+class ViewQuestions extends Component {
+  constructor(props) {
+    super(props);
 
-  // Modal state for delete confirmation
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [questionToDelete, setQuestionToDelete] = useState(null);
+    this.state = {
+      editingQuestion: null,
+      editForm: {},
+      filterCategory: 'all',
+      filterDifficulty: 'all',
+      sortBy: 'newest',
+      // Modal state for delete confirmation
+      showDeleteModal: false,
+      questionToDelete: null
+    };
+  }
 
   // Get unique categories and difficulties for filters
-  const categories = [...new Set(questions.map(q => q.category))];
-  const difficulties = [...new Set(questions.map(q => q.difficulty))];
+  getCategories = () => {
+    return [...new Set(this.props.questions.map(q => q.category))];
+  };
+
+  getDifficulties = () => {
+    return [...new Set(this.props.questions.map(q => q.difficulty))];
+  };
 
   // Filter and sort questions
-  const getFilteredAndSortedQuestions = () => {
-    let filtered = questions.filter(question => {
-      const categoryMatch = filterCategory === 'all' || question.category === filterCategory;
-      const difficultyMatch = filterDifficulty === 'all' || question.difficulty === filterDifficulty;
+  getFilteredAndSortedQuestions = () => {
+    let filtered = this.props.questions.filter(question => {
+      const categoryMatch = this.state.filterCategory === 'all' || question.category === this.state.filterCategory;
+      const difficultyMatch = this.state.filterDifficulty === 'all' || question.difficulty === this.state.filterDifficulty;
       return categoryMatch && difficultyMatch;
     });
 
     // Sort questions
-    switch (sortBy) {
+    switch (this.state.sortBy) {
       case 'newest':
         return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       case 'oldest':
@@ -40,96 +50,119 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
     }
   };
 
-  const filteredQuestions = getFilteredAndSortedQuestions();
-
-  const startEditing = (question) => {
-    setEditingQuestion(question.id);
-    setEditForm({
-      question: question.question,
-      options: [...question.options],
-      correctAnswer: question.correctAnswer,
-      difficulty: question.difficulty,
-      category: question.category
+  startEditing = (question) => {
+    this.setState({
+      editingQuestion: question.id,
+      editForm: {
+        question: question.question,
+        options: [...question.options],
+        correctAnswer: question.correctAnswer,
+        difficulty: question.difficulty,
+        category: question.category
+      }
     });
   };
 
-  const cancelEditing = () => {
-    setEditingQuestion(null);
-    setEditForm({});
+  cancelEditing = () => {
+    this.setState({
+      editingQuestion: null,
+      editForm: {}
+    });
   };
 
-  const handleEditOptionChange = (index, value) => {
-    const newOptions = [...editForm.options];
-    newOptions[index] = value;
-    setEditForm({ ...editForm, options: newOptions });
+  handleEditOptionChange = (index, value) => {
+    this.setState(prevState => {
+      const newOptions = [...prevState.editForm.options];
+      newOptions[index] = value;
+      return {
+        editForm: { ...prevState.editForm, options: newOptions }
+      };
+    });
   };
 
-  const addEditOption = () => {
-    if (editForm.options.length < 6) {
-      setEditForm({
-        ...editForm,
-        options: [...editForm.options, '']
-      });
-    }
+  addEditOption = () => {
+    this.setState(prevState => {
+      if (prevState.editForm.options.length < 6) {
+        return {
+          editForm: {
+            ...prevState.editForm,
+            options: [...prevState.editForm.options, '']
+          }
+        };
+      }
+      return prevState;
+    });
   };
 
-  const removeEditOption = (index) => {
-    if (editForm.options.length > 2) {
-      const newOptions = editForm.options.filter((_, i) => i !== index);
-      setEditForm({
-        ...editForm,
-        options: newOptions,
-        correctAnswer: editForm.correctAnswer >= newOptions.length ? 0 : editForm.correctAnswer
-      });
-    }
+  removeEditOption = (index) => {
+    this.setState(prevState => {
+      if (prevState.editForm.options.length > 2) {
+        const newOptions = prevState.editForm.options.filter((_, i) => i !== index);
+        return {
+          editForm: {
+            ...prevState.editForm,
+            options: newOptions,
+            correctAnswer: prevState.editForm.correctAnswer >= newOptions.length ? 0 : prevState.editForm.correctAnswer
+          }
+        };
+      }
+      return prevState;
+    });
   };
 
-  const saveEdit = () => {
+  saveEdit = () => {
     // Validation
-    if (!editForm.question.trim()) {
+    if (!this.state.editForm.question.trim()) {
       alert('Please enter a question');
       return;
     }
     
-    const validOptions = editForm.options.filter(option => option.trim() !== '');
+    const validOptions = this.state.editForm.options.filter(option => option.trim() !== '');
     if (validOptions.length < 2) {
       alert('Please provide at least 2 options');
       return;
     }
     
-    if (!editForm.options[editForm.correctAnswer] || !editForm.options[editForm.correctAnswer].trim()) {
+    if (!this.state.editForm.options[this.state.editForm.correctAnswer] || 
+        !this.state.editForm.options[this.state.editForm.correctAnswer].trim()) {
       alert('Please select a valid correct answer');
       return;
     }
 
     const updatedQuestion = {
-      question: editForm.question.trim(),
+      question: this.state.editForm.question.trim(),
       options: validOptions,
-      correctAnswer: editForm.correctAnswer < validOptions.length ? editForm.correctAnswer : 0,
-      difficulty: editForm.difficulty,
-      category: editForm.category,
-      createdAt: questions.find(q => q.id === editingQuestion).createdAt
+      correctAnswer: this.state.editForm.correctAnswer < validOptions.length ? this.state.editForm.correctAnswer : 0,
+      difficulty: this.state.editForm.difficulty,
+      category: this.state.editForm.category,
+      createdAt: this.props.questions.find(q => q.id === this.state.editingQuestion).createdAt
     };
 
-    onEditQuestion(editingQuestion, updatedQuestion);
-    setEditingQuestion(null);
-    setEditForm({});
+    this.props.onEditQuestion(this.state.editingQuestion, updatedQuestion);
+    this.setState({
+      editingQuestion: null,
+      editForm: {}
+    });
   };
 
-  const handleDelete = (questionId) => {
-    setQuestionToDelete(questionId);
-    setShowDeleteModal(true);
+  handleDelete = (questionId) => {
+    this.setState({
+      questionToDelete: questionId,
+      showDeleteModal: true
+    });
   };
 
-  const confirmDelete = () => {
-    if (questionToDelete) {
-      onDeleteQuestion(questionToDelete);
-      setQuestionToDelete(null);
-      setShowDeleteModal(false);
+  confirmDelete = () => {
+    if (this.state.questionToDelete) {
+      this.props.onDeleteQuestion(this.state.questionToDelete);
+      this.setState({
+        questionToDelete: null,
+        showDeleteModal: false
+      });
     }
   };
 
-  const formatDate = (dateString) => {
+  formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -139,7 +172,22 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
     });
   };
 
-  if (questions.length === 0) {
+  render() {
+    const { questions } = this.props;
+    const { 
+      editingQuestion, 
+      editForm, 
+      filterCategory, 
+      filterDifficulty, 
+      sortBy,
+      showDeleteModal 
+    } = this.state;
+
+    const filteredQuestions = this.getFilteredAndSortedQuestions();
+    const categories = this.getCategories();
+    const difficulties = this.getDifficulties();
+
+    if (questions.length === 0) {
     return (
       <div className="empty-state">
         <h3 style={{ fontSize: '1.2rem' }}>No Questions Created Yet</h3>
@@ -168,7 +216,7 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
             <select
               id="filter-category"
               value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
+              onChange={(e) => this.setState({ filterCategory: e.target.value })}
             >
               <option value="all">All Categories</option>
               {categories.map(category => (
@@ -184,7 +232,7 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
             <select
               id="filter-difficulty"
               value={filterDifficulty}
-              onChange={(e) => setFilterDifficulty(e.target.value)}
+              onChange={(e) => this.setState({ filterDifficulty: e.target.value })}
             >
               <option value="all">All Difficulties</option>
               {difficulties.map(difficulty => (
@@ -200,7 +248,7 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
             <select
               id="sort-by"
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={(e) => this.setState({ sortBy: e.target.value })}
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -227,7 +275,7 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
                   <label>Question</label>
                   <textarea
                     value={editForm.question}
-                    onChange={(e) => setEditForm({ ...editForm, question: e.target.value })}
+                    onChange={(e) => this.setState({ editForm: { ...this.state.editForm, question: e.target.value } })}
                     rows="3"
                   />
                 </div>
@@ -237,7 +285,7 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
                     <label>Category</label>
                     <select
                       value={editForm.category}
-                      onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                      onChange={(e) => this.setState({ editForm: { ...this.state.editForm, category: e.target.value } })}
                     >
                       <option value="general">General Knowledge</option>
                       <option value="science">Science</option>
@@ -254,7 +302,7 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
                     <label>Difficulty</label>
                     <select
                       value={editForm.difficulty}
-                      onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
+                      onChange={(e) => this.setState({ editForm: { ...this.state.editForm, difficulty: e.target.value } })}
                     >
                       <option value="easy">Easy</option>
                       <option value="medium">Medium</option>
@@ -272,18 +320,18 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
                           type="radio"
                           name="editCorrectAnswer"
                           checked={editForm.correctAnswer === index}
-                          onChange={() => setEditForm({ ...editForm, correctAnswer: index })}
+                          onChange={() => this.setState({ editForm: { ...this.state.editForm, correctAnswer: index } })}
                         />
                         <input
                           type="text"
                           value={option}
-                          onChange={(e) => handleEditOptionChange(index, e.target.value)}
+                          onChange={(e) => this.handleEditOptionChange(index, e.target.value)}
                           placeholder={`Option ${index + 1}`}
                         />
                         {editForm.options.length > 2 && (
                           <button
                             type="button"
-                            onClick={() => removeEditOption(index)}
+                            onClick={() => this.removeEditOption(index)}
                             className="btn btn-danger"
                             style={{ padding: '8px 12px', fontSize: '0.8rem' }}
                           >
@@ -297,7 +345,7 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
                   {editForm.options.length < 6 && (
                     <button
                       type="button"
-                      onClick={addEditOption}
+                      onClick={this.addEditOption}
                       className="btn btn-secondary"
                       style={{ marginTop: '10px' }}
                     >
@@ -307,10 +355,10 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
                 </div>
 
                 <div className="question-actions">
-                  <button onClick={saveEdit} className="btn btn-success">
+                  <button onClick={this.saveEdit} className="btn btn-success">
                     💾 Save
                   </button>
-                  <button onClick={cancelEditing} className="btn btn-secondary">
+                  <button onClick={this.cancelEditing} className="btn btn-secondary">
                     ❌ Cancel
                   </button>
                 </div>
@@ -372,18 +420,18 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
                   fontSize: '0.9rem',
                   color: '#718096'
                 }}>
-                  <span>Created: {formatDate(question.createdAt)}</span>
+                  <span>Created: {this.formatDate(question.createdAt)}</span>
                   
                   <div className="question-actions">
                     <button
-                      onClick={() => startEditing(question)}
+                      onClick={() => this.startEditing(question)}
                       className="btn btn-primary"
                       style={{ padding: '8px 16px', fontSize: '0.9rem' }}
                     >
                       ✏️ Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(question.id)}
+                      onClick={() => this.handleDelete(question.id)}
                       className="btn btn-danger"
                       style={{ padding: '8px 16px', fontSize: '0.9rem' }}
                     >
@@ -399,15 +447,16 @@ const ViewQuestions = ({ questions, onDeleteQuestion, onEditQuestion }) => {
 
       <ConfirmModal
         show={showDeleteModal}
-        onHide={() => setShowDeleteModal(false)}
+        onHide={() => this.setState({ showDeleteModal: false })}
         title="Delete Question"
         message="Are you sure you want to delete this question? This action cannot be undone."
-        onConfirm={confirmDelete}
+        onConfirm={this.confirmDelete}
         confirmText="Delete"
         confirmVariant="danger"
       />
     </div>
-  );
-};
+    );
+  }
+}
 
 export default ViewQuestions;

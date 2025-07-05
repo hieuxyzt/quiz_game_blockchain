@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { Component } from 'react';
 
-const QuestionPresets = ({ onLoadPreset }) => {
-  const presets = [
+class QuestionPresets extends Component {
+  constructor(props) {
+    super(props);
+
+    this.presets = [
     {
       id: 'general-knowledge',
       title: 'General Knowledge',
@@ -190,9 +193,11 @@ const QuestionPresets = ({ onLoadPreset }) => {
         }
       ]
     }
-  ];
+    ];
+  }
 
-  return (
+  render() {
+    return (
     <div className="card" style={{ marginBottom: '20px' }}>
       <h3 style={{ 
         marginBottom: '8px', 
@@ -222,7 +227,7 @@ const QuestionPresets = ({ onLoadPreset }) => {
           scrollbarWidth: 'thin',
           scrollbarColor: '#cbd5e0 #f7fafc'
         }}>
-        {presets.map((preset) => (
+        {this.presets.map((preset) => (
           <div
             key={preset.id}
             className="preset-card"
@@ -239,7 +244,7 @@ const QuestionPresets = ({ onLoadPreset }) => {
               minWidth: '180px',
               flexShrink: 0
             }}
-            onClick={() => onLoadPreset(preset.questions)}
+            onClick={() => this.props.onLoadPreset(preset.questions)}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-1px)';
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
@@ -292,7 +297,8 @@ const QuestionPresets = ({ onLoadPreset }) => {
         ))}
       </div>
     </div>
-  );
-};
+    );
+  }
+}
 
 export default QuestionPresets;
