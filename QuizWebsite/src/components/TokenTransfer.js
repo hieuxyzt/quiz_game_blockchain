@@ -15,7 +15,6 @@ class TokenTransfer extends Component {
             nftSymbol: '',
             formData: {
                 nftAmount: '10',
-                fromAddress: '',
                 toAddress: '0x7bC1bdD2E1d8c600145f4c8442ed7bc10D50d772'
             },
             isTransferring: false,
@@ -42,27 +41,31 @@ class TokenTransfer extends Component {
         const currentAddress = accounts[0];
         this.setState({currentAddress})
 
-        const ethBalanceInWei = await web3.eth.getBalance(currentAddress);
+        await this.updateUserBalance(currentAddress);
+
+        this.setState({nftSymbol});
+    }
+
+    updateUserBalance = async (address = this.state.currentAddress) => {
+        const ethBalanceInWei = await web3.eth.getBalance(address);
         let ethBalance = web3.utils.fromWei(ethBalanceInWei, 'ether');
-        let nftBalance = await quizContract.methods.balanceOf(currentAddress).call();
+        let nftBalance = await quizContract.methods.balanceOf(address).call();
 
         ethBalance = ethBalance ? parseFloat(ethBalance).toFixed(18) : '0';
         nftBalance = nftBalance ? parseInt(nftBalance, 10) : 0;
-        console.log(currentAddress)
 
         let userInfo = {
-            address: currentAddress,
+            address: address,
             ethBalance: ethBalance,
             nftBalance: nftBalance
         }
 
         // Update formData to set fromAddress to the current wallet address
         this.setState(prevState => ({
-            nftSymbol,
             userInfo,
             formData: {
                 ...prevState.formData,
-                fromAddress: currentAddress
+                fromAddress: address
             }
         }));
     }
@@ -101,7 +104,8 @@ class TokenTransfer extends Component {
                 showResultModal: true
             });
 
-            this.componentDidMount()
+            // Refresh user balance after successful mint
+            await this.updateUserBalance();
         } catch (error) {
             console.log(error)
             this.setState({
@@ -127,18 +131,26 @@ class TokenTransfer extends Component {
         });
 
         try {
-            // Simulate Token transfer (in a real app, you'd connect to Web3/Ethers.js)
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            let transactionHash = await quizContract.methods.transfer(
+                this.state.formData.toAddress,
+                this.state.formData.nftAmount
+            ).send({
+                from: this.state.currentAddress,
+            })
+
 
             this.setState({
                 transferResult: {
                     success: true,
-                    transactionHash: '0x' + Math.random().toString(16).substr(2, 64),
+                    transactionHash: transactionHash.blockHash,
                     message: 'Token transfer completed successfully!'
                 },
                 showLoadingModal: false,
                 showResultModal: true
             });
+
+            // Refresh user balance after successful transfer
+            await this.updateUserBalance();
         } catch (error) {
             this.setState({
                 transferResult: {
@@ -156,7 +168,7 @@ class TokenTransfer extends Component {
     resetForm = () => {
         this.setState({
             formData: {
-                nftAmount: '0',
+                nftAmount: '10',
                 fromAddress: this.state.currentAddress || '',
                 toAddress: '0x7bC1bdD2E1d8c600145f4c8442ed7bc10D50d772'
             },
@@ -165,11 +177,11 @@ class TokenTransfer extends Component {
     };
 
     closeLoadingModal = () => {
-        this.setState({ showLoadingModal: false });
+        this.setState({showLoadingModal: false});
     };
 
     closeResultModal = () => {
-        this.setState({ 
+        this.setState({
             showResultModal: false,
             transferResult: null,
             mintingResult: null
@@ -177,7 +189,18 @@ class TokenTransfer extends Component {
     };
 
     render() {
-        const {nftSymbol, formData, isTransferring, transferResult, mintingResult, isMinting, userInfo, showLoadingModal, showResultModal, currentOperation} = this.state;
+        const {
+            nftSymbol,
+            formData,
+            isTransferring,
+            transferResult,
+            mintingResult,
+            isMinting,
+            userInfo,
+            showLoadingModal,
+            showResultModal,
+            currentOperation
+        } = this.state;
 
         return (
             <div>
@@ -301,20 +324,6 @@ class TokenTransfer extends Component {
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="fromAddress">From Address</label>
-                                <input
-                                    type="text"
-                                    id="fromAddress"
-                                    name="fromAddress"
-                                    value={formData.fromAddress}
-                                    onChange={this.handleInputChange}
-                                    placeholder="0x... (sender address)"
-                                    required
-                                    style={{fontSize: '1rem'}}
-                                />
-                            </div>
-
-                            <div className="form-group">
                                 <label htmlFor="toAddress">To Address</label>
                                 <input
                                     type="text"
@@ -362,7 +371,8 @@ class TokenTransfer extends Component {
 
                 {/* Loading Modal */}
                 {showLoadingModal && (
-                    <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}} tabIndex="-1">
+                    <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}}
+                         tabIndex="-1">
                         <div className="modal-dialog modal-dialog-centered">
                             <div className="modal-content">
                                 <div className="modal-header">
@@ -375,8 +385,8 @@ class TokenTransfer extends Component {
                                         <span className="visually-hidden">Loading...</span>
                                     </div>
                                     <p>
-                                        {currentOperation === 'mint' 
-                                            ? 'Please wait while your Token is being minted...' 
+                                        {currentOperation === 'mint'
+                                            ? 'Please wait while your Token is being minted...'
                                             : 'Please wait while your Token is being transferred...'}
                                     </p>
                                     <small className="text-muted">This may take a few moments.</small>
@@ -388,23 +398,26 @@ class TokenTransfer extends Component {
 
                 {/* Result Modal */}
                 {showResultModal && (
-                    <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}} tabIndex="-1">
+                    <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}}
+                         tabIndex="-1">
                         <div className="modal-dialog modal-dialog-centered">
                             <div className="modal-content">
                                 <div className="modal-header">
                                     <h5 className="modal-title">
                                         {(transferResult?.success || mintingResult?.success) ? '✅ Success!' : '❌ Transaction Failed'}
                                     </h5>
-                                    <button type="button" className="btn-close" onClick={this.closeResultModal}></button>
+                                    <button type="button" className="btn-close"
+                                            onClick={this.closeResultModal}></button>
                                 </div>
                                 <div className="modal-body">
-                                    <div className={`alert ${(transferResult?.success || mintingResult?.success) ? 'alert-success' : 'alert-danger'}`}>
+                                    <div
+                                        className={`alert ${(transferResult?.success || mintingResult?.success) ? 'alert-success' : 'alert-danger'}`}>
                                         <strong>
                                             {(transferResult?.success || mintingResult?.success) ? 'Transaction Successful!' : 'Transaction Failed!'}
                                         </strong>
                                     </div>
                                     <p>{transferResult?.message || mintingResult?.message}</p>
-                                    
+
                                     {(transferResult?.transactionHash || mintingResult?.transactionHash) && (
                                         <div className="mt-3">
                                             <strong>Transaction Hash:</strong>

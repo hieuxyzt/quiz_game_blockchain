@@ -5,7 +5,11 @@ import ViewQuestions from './components/ViewQuestions';
 import TokenTransfer from './components/TokenTransfer';
 
 function App() {
-  const [currentView, setCurrentView] = useState('quiz');
+  // Load current view from localStorage or default to 'quiz'
+  const [currentView, setCurrentView] = useState(() => {
+    const savedView = localStorage.getItem('currentView');
+    return savedView || 'quiz';
+  });
   const [questions, setQuestions] = useState([]);
 
   // Load questions from localStorage on component mount
@@ -20,6 +24,11 @@ function App() {
   useEffect(() => {
     localStorage.setItem('quizQuestions', JSON.stringify(questions));
   }, [questions]);
+
+  // Save current view to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('currentView', currentView);
+  }, [currentView]);
 
   const addQuestions = (newQuestions) => {
     const questionsWithIds = newQuestions.map((question, index) => ({
