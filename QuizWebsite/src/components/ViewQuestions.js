@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import ConfirmModal from './ConfirmModal';
 
+import quizContract from "../contract/quizContract";
+import web3 from "../contract/web3";
+
 class ViewQuestions extends Component {
   constructor(props) {
     super(props);
@@ -13,8 +16,15 @@ class ViewQuestions extends Component {
       sortBy: 'newest',
       // Modal state for delete confirmation
       showDeleteModal: false,
-      questionToDelete: null
+      questionToDelete: null,
+      currentAddress: ''
     };
+  }
+
+  async componentDidMount() {
+    const accounts = await web3.eth.getAccounts();
+    const currentAddress = accounts[0];
+    this.setState({currentAddress});
   }
 
   // Get unique categories and difficulties for filters
@@ -54,6 +64,7 @@ class ViewQuestions extends Component {
     this.setState({
       editingQuestion: question.id,
       editForm: {
+        id: question.id,
         question: question.question,
         options: [...question.options],
         correctAnswer: question.correctAnswer,
@@ -110,7 +121,7 @@ class ViewQuestions extends Component {
     });
   };
 
-  saveEdit = () => {
+  saveEdit = async () => {
     // Validation
     if (!this.state.editForm.question.trim()) {
       alert('Please enter a question');
@@ -130,6 +141,7 @@ class ViewQuestions extends Component {
     }
 
     const updatedQuestion = {
+      id: this.state.editForm.id,
       question: this.state.editForm.question.trim(),
       options: validOptions,
       correctAnswer: this.state.editForm.correctAnswer < validOptions.length ? this.state.editForm.correctAnswer : 0,
@@ -137,6 +149,10 @@ class ViewQuestions extends Component {
       category: this.state.editForm.category,
       createdAt: this.props.questions.find(q => q.id === this.state.editingQuestion).createdAt
     };
+
+    await quizContract.methods.addAllQuizzes([updatedQuestion]).send({
+      from: this.state.currentAddress,
+    });
 
     this.props.onEditQuestion(this.state.editingQuestion, updatedQuestion);
     this.setState({
@@ -152,8 +168,12 @@ class ViewQuestions extends Component {
     });
   };
 
-  confirmDelete = () => {
+  confirmDelete = async () => {
     if (this.state.questionToDelete) {
+      await quizContract.methods.deleteQuiz(this.state.questionToDelete).send({
+        from: this.state.currentAddress,
+      });
+
       this.props.onDeleteQuestion(this.state.questionToDelete);
       this.setState({
         questionToDelete: null,

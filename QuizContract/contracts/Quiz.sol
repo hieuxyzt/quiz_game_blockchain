@@ -72,7 +72,8 @@ contract Quiz is IERC20 {
 
     function deleteQuiz(string memory id) public {
         uint index = findQuizById(id);
-        delete quizzes[index];
+        quizzes[index] = quizzes[quizzes.length - 1];
+        quizzes.pop();
     }
 
     function updateQuiz(string memory id, QuizEntity memory quiz) public {

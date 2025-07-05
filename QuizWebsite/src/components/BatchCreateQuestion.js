@@ -309,7 +309,8 @@ class BatchCreateQuestion extends Component {
         <form onSubmit={this.handleSubmit}>
           {questions.map((question, questionIndex) => (
             <div 
-              key={questionIndex} 
+              key={questionIndex}
+              id={`question-form-${questionIndex}`}
               style={{ 
                 border: '1px solid #e2e8f0', 
                 borderRadius: '12px', 
@@ -573,7 +574,7 @@ class BatchCreateQuestion extends Component {
                 gap: '6px'
               }}
             >
-              {isCreatingQuestions ? 'Creating...' : '🚀'} <span>{isCreatingQuestions ? 'Creating Questions...' : 'Create All Questions'}</span>
+              <span>{isCreatingQuestions ? '🚀 Creating Questions...' : '🚀 Create All Questions'}</span>
             </button>
           </div>
         </form>
