@@ -4,7 +4,7 @@ import web3 from "../contract/web3";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-class NFTTransfer extends Component {
+class TokenTransfer extends Component {
     constructor(props) {
         super(props);
 
@@ -14,8 +14,7 @@ class NFTTransfer extends Component {
         this.state = {
             nftSymbol: '',
             formData: {
-                ethAmount: '0',
-                nftAmount: '0',
+                nftAmount: '10',
                 fromAddress: '',
                 toAddress: '0x7bC1bdD2E1d8c600145f4c8442ed7bc10D50d772'
             },
@@ -90,14 +89,13 @@ class NFTTransfer extends Component {
         try {
             let transactionHash = await quizContract.methods.mint(this.state.formData.nftAmount).send({
                 from: this.state.currentAddress,
-                value: web3.utils.toWei(this.state.formData.ethAmount, 'ether'),
             })
 
             this.setState({
                 mintingResult: {
                     success: true,
                     transactionHash: transactionHash.transactionHash,
-                    message: 'NFT minting completed successfully!'
+                    message: 'Token minting completed successfully!'
                 },
                 showLoadingModal: false,
                 showResultModal: true
@@ -129,14 +127,14 @@ class NFTTransfer extends Component {
         });
 
         try {
-            // Simulate NFT transfer (in a real app, you'd connect to Web3/Ethers.js)
+            // Simulate Token transfer (in a real app, you'd connect to Web3/Ethers.js)
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             this.setState({
                 transferResult: {
                     success: true,
                     transactionHash: '0x' + Math.random().toString(16).substr(2, 64),
-                    message: 'NFT transfer completed successfully!'
+                    message: 'Token transfer completed successfully!'
                 },
                 showLoadingModal: false,
                 showResultModal: true
@@ -158,7 +156,6 @@ class NFTTransfer extends Component {
     resetForm = () => {
         this.setState({
             formData: {
-                ethAmount: '0',
                 nftAmount: '0',
                 fromAddress: this.state.currentAddress || '',
                 toAddress: '0x7bC1bdD2E1d8c600145f4c8442ed7bc10D50d772'
@@ -186,7 +183,7 @@ class NFTTransfer extends Component {
             <div>
                 <div className="card">
                     <h2 style={{marginBottom: '30px', color: '#2d3748', fontSize: '1.2rem'}}>
-                        🎨 Transfer Ethereum NFT
+                        🎨 Transfer Ethereum Token
                     </h2>
 
                     {/* User Info Section */}
@@ -288,14 +285,14 @@ class NFTTransfer extends Component {
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="nftAmount">NFT Amount</label>
+                                <label htmlFor="nftAmount">Token Amount</label>
                                 <input
                                     type="number"
                                     id="nftAmount"
                                     name="nftAmount"
                                     value={formData.nftAmount}
                                     onChange={this.handleInputChange}
-                                    placeholder="Enter NFT amount"
+                                    placeholder="Enter Token amount"
                                     step="1"
                                     min="0"
                                     required
@@ -370,7 +367,7 @@ class NFTTransfer extends Component {
                             <div className="modal-content">
                                 <div className="modal-header">
                                     <h5 className="modal-title">
-                                        {currentOperation === 'mint' ? '🎨 Minting NFT...' : '🚀 Transferring NFT...'}
+                                        {currentOperation === 'mint' ? '🎨 Minting Token...' : '🚀 Transferring Token...'}
                                     </h5>
                                 </div>
                                 <div className="modal-body text-center">
@@ -379,8 +376,8 @@ class NFTTransfer extends Component {
                                     </div>
                                     <p>
                                         {currentOperation === 'mint' 
-                                            ? 'Please wait while your NFT is being minted...' 
-                                            : 'Please wait while your NFT is being transferred...'}
+                                            ? 'Please wait while your Token is being minted...' 
+                                            : 'Please wait while your Token is being transferred...'}
                                     </p>
                                     <small className="text-muted">This may take a few moments.</small>
                                 </div>
@@ -435,4 +432,4 @@ class NFTTransfer extends Component {
     }
 }
 
-export default NFTTransfer;
+export default TokenTransfer;

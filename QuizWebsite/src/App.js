@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BatchCreateQuestion from './components/BatchCreateQuestion';
 import TakeQuiz from './components/TakeQuiz';
 import ViewQuestions from './components/ViewQuestions';
-import NFTTransfer from './components/NFTTransfer';
+import TokenTransfer from './components/TokenTransfer';
 
 function App() {
   const [currentView, setCurrentView] = useState('quiz');
@@ -54,7 +54,7 @@ function App() {
           />
         );
       case 'nft':
-        return <NFTTransfer />;
+        return <TokenTransfer />;
       default:
         return <TakeQuiz questions={questions} />;
     }
@@ -170,7 +170,7 @@ function App() {
             }}
           >
             <span className="fs-5">🎨</span>
-            <span>NFT Transfer</span>
+            <span>Token Transfer</span>
           </button>
         </div>
       </nav>
@@ -226,7 +226,7 @@ function App() {
             style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
           >
             <span className="fs-6">🎨</span>
-            <span>NFT</span>
+            <span>Token</span>
           </button>
         </div>
       </nav>
