@@ -34,16 +34,20 @@ class TokenTransfer extends Component {
     }
 
     async componentDidMount() {
-        this.CONTRACT_ADDRESS = quizContract.options.address;
-        const nftSymbol = await quizContract.methods.symbol().call();
+        try {
+            this.CONTRACT_ADDRESS = quizContract.options.address;
+            const nftSymbol = await quizContract.methods.symbol().call();
 
-        const accounts = await web3.eth.getAccounts();
-        const currentAddress = accounts[0];
-        this.setState({currentAddress});
+            const accounts = await web3.eth.getAccounts();
+            const currentAddress = accounts[0];
+            this.setState({currentAddress});
 
-        await this.updateUserBalance(currentAddress);
+            await this.updateUserBalance(currentAddress);
 
-        this.setState({nftSymbol});
+            this.setState({nftSymbol});
+        } catch (error) {
+            console.error("Please connect to MetaMask");
+        }
     }
 
     updateUserBalance = async (address = this.state.currentAddress) => {

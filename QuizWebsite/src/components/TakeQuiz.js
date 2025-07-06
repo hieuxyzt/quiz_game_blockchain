@@ -25,9 +25,13 @@ class TakeQuiz extends Component {
   }
 
   async componentDidMount() {
-    const accounts = await web3.eth.getAccounts();
-    const currentAddress = accounts[0];
-    this.setState({currentAddress});
+    try {
+      const accounts = await web3.eth.getAccounts();
+      const currentAddress = accounts[0];
+      this.setState({currentAddress});
+    } catch (error) {
+      console.error("Please connect to MetaMask");
+    }
   }
 
   // Filter questions based on selected criteria

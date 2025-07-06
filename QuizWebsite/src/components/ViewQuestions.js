@@ -38,9 +38,13 @@ class ViewQuestions extends Component {
   }
 
   async componentDidMount() {
-    const accounts = await web3.eth.getAccounts();
-    const currentAddress = accounts[0];
-    this.setState({currentAddress});
+    try {
+      const accounts = await web3.eth.getAccounts();
+      const currentAddress = accounts[0];
+      this.setState({currentAddress});
+    } catch (error) {
+      console.error("Please connect to MetaMask");
+    }
   }
 
   // Helper method to show alert modal
@@ -88,7 +92,7 @@ class ViewQuestions extends Component {
 
   confirmDeleteAll = async () => {
     const { questions } = this.props;
-    
+
     if (questions.length === 0) {
       this.setState({ showDeleteAllModal: false });
       return;
@@ -114,7 +118,7 @@ class ViewQuestions extends Component {
       this.setState({
         showLoadingModal: false
       });
-      
+
       // Show success modal
       this.showSuccess(`Successfully deleted ${questions.length} question${questions.length > 1 ? 's' : ''}!`, 'All Questions Deleted');
     } catch (error) {
@@ -227,14 +231,14 @@ class ViewQuestions extends Component {
       this.showAlert('Please enter a question', 'Validation Error', 'warning');
       return;
     }
-    
+
     const validOptions = this.state.editForm.options.filter(option => option.trim() !== '');
     if (validOptions.length < 2) {
       this.showAlert('Please provide at least 2 options', 'Validation Error', 'warning');
       return;
     }
-    
-    if (!this.state.editForm.options[this.state.editForm.correctAnswer] || 
+
+    if (!this.state.editForm.options[this.state.editForm.correctAnswer] ||
         !this.state.editForm.options[this.state.editForm.correctAnswer].trim()) {
       this.showAlert('Please select a valid correct answer', 'Validation Error', 'warning');
       return;
@@ -268,7 +272,7 @@ class ViewQuestions extends Component {
         editForm: {},
         showLoadingModal: false
       });
-      
+
       // Show success modal
       this.showSuccess('Question has been updated successfully!', 'Question Updated');
     } catch (error) {
@@ -308,7 +312,7 @@ class ViewQuestions extends Component {
           questionToDelete: null,
           showLoadingModal: false
         });
-        
+
         // Show success modal
         this.showSuccess('Question has been deleted successfully!', 'Question Deleted');
       } catch (error) {
@@ -337,11 +341,11 @@ class ViewQuestions extends Component {
 
   render() {
     const { questions } = this.props;
-    const { 
-      editingQuestion, 
-      editForm, 
-      filterCategory, 
-      filterDifficulty, 
+    const {
+      editingQuestion,
+      editForm,
+      filterCategory,
+      filterDifficulty,
       sortBy,
       showDeleteModal,
       showLoadingModal,
@@ -396,13 +400,13 @@ class ViewQuestions extends Component {
             </button>
           )}
         </div>
-        
+
         {/* Filters and Sort */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-          gap: '20px', 
-          marginBottom: '20px' 
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '20px',
+          marginBottom: '20px'
         }}>
           <div className="form-group">
             <label htmlFor="filter-category">Filter by Category</label>
@@ -534,7 +538,7 @@ class ViewQuestions extends Component {
                       </div>
                     ))}
                   </div>
-                  
+
                   {editForm.options.length < 6 && (
                     <button
                       type="button"
@@ -548,15 +552,15 @@ class ViewQuestions extends Component {
                 </div>
 
                 <div className="question-actions">
-                  <button 
-                    onClick={this.saveEdit} 
+                  <button
+                    onClick={this.saveEdit}
                     className="btn btn-success"
                     disabled={isOperating}
                   >
                     {isOperating && currentOperation === 'edit' ? '🔄 Saving...' : '💾 Save'}
                   </button>
-                  <button 
-                    onClick={this.cancelEditing} 
+                  <button
+                    onClick={this.cancelEditing}
                     className="btn btn-secondary"
                     disabled={isOperating}
                   >
@@ -570,8 +574,8 @@ class ViewQuestions extends Component {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
                   <h4 style={{ fontSize: '1.1rem' }}>{question.question}</h4>
                   <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                    <span style={{ 
-                      background: question.difficulty === 'easy' ? '#48bb78' : 
+                    <span style={{
+                      background: question.difficulty === 'easy' ? '#48bb78' :
                                  question.difficulty === 'medium' ? '#ed8936' : '#f56565',
                       color: 'white',
                       padding: '4px 8px',
@@ -581,7 +585,7 @@ class ViewQuestions extends Component {
                     }}>
                       {question.difficulty.toUpperCase()}
                     </span>
-                    <span style={{ 
+                    <span style={{
                       background: '#667eea',
                       color: 'white',
                       padding: '4px 8px',
@@ -599,7 +603,7 @@ class ViewQuestions extends Component {
                     <div
                       key={index}
                       className={index === question.correctAnswer ? 'correct' : ''}
-                      style={{ 
+                      style={{
                         padding: '8px 12px',
                         backgroundColor: index === question.correctAnswer ? '#f0fff4' : '#f7fafc',
                         borderRadius: '6px',
@@ -613,16 +617,16 @@ class ViewQuestions extends Component {
                   ))}
                 </div>
 
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
                   marginTop: '15px',
                   fontSize: '0.9rem',
                   color: '#718096'
                 }}>
                   <span>Created: {this.formatDate(question.createdAt)}</span>
-                  
+
                   <div className="question-actions">
                     <button
                       onClick={() => this.startEditing(question)}
@@ -675,8 +679,8 @@ class ViewQuestions extends Component {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
-                  {currentOperation === 'edit' ? '✏️ Updating Question...' : 
-                   currentOperation === 'delete' ? '🗑️ Deleting Question...' : 
+                  {currentOperation === 'edit' ? '✏️ Updating Question...' :
+                   currentOperation === 'delete' ? '🗑️ Deleting Question...' :
                    '🗑️ Deleting All Questions...'}
                 </h5>
               </div>
@@ -687,7 +691,7 @@ class ViewQuestions extends Component {
                 <p>
                   {currentOperation === 'edit'
                     ? 'Please wait while your question is being updated on the blockchain...'
-                    : currentOperation === 'delete' 
+                    : currentOperation === 'delete'
                     ? 'Please wait while your question is being deleted from the blockchain...'
                     : 'Please wait while all questions are being deleted from the blockchain...'}
                 </p>
