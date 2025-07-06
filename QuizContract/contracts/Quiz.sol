@@ -20,6 +20,7 @@ contract Quiz is IERC20 {
         string category;
         string createdAt;
     }
+    event QuizResult(address indexed user, uint score, QuizEntity[] quizAnswers);
 
     QuizEntity[] public quizzes;
 
@@ -92,5 +93,16 @@ contract Quiz is IERC20 {
             }
         }
         revert("Quiz not found");
+    }
+
+    function quizCheck(uint score, QuizEntity[] memory quizAnswers) public view {
+        uint correctAnswers = 0;
+        for (uint i = 0; i < quizAnswers.length; i++) {
+            if (quizzes[i].correctAnswer == quizAnswers[i].correctAnswer) {
+                correctAnswers++;
+            }
+        }
+        return correctAnswers >= score;
+
     }
 }

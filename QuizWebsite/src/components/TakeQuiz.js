@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import AlertModal from './AlertModal';
+import quizContract from "../contract/quizContract";
 
 class TakeQuiz extends Component {
   constructor(props) {
@@ -59,12 +60,19 @@ class TakeQuiz extends Component {
     const filteredQuestions = this.getFilteredQuestions();
     let correct = 0;
     filteredQuestions.forEach((question, index) => {
-      if (this.state.selectedAnswers[index] === question.correctAnswer) {
+      question.answer = this.state.selectedAnswers[index];
+      if (this.state.selectedAnswers[index] == question.correctAnswer) {
         correct++;
       }
     });
     return correct;
   };
+
+  async quizCheck(score, questions) {
+    // await quizContract.methods.quizCheck().send({
+    //   from: this.state.currentAddress
+    // })
+  }
 
   resetQuiz = () => {
     this.setState({
@@ -195,6 +203,8 @@ class TakeQuiz extends Component {
 
     if (showResults) {
       const score = this.calculateScore();
+      console.log(filteredQuestions);
+      this.quizCheck(score, filteredQuestions);
       const percentage = Math.round((score / filteredQuestions.length) * 100);
       
       return (
@@ -209,7 +219,7 @@ class TakeQuiz extends Component {
             <h3 style={{ marginBottom: '20px', color: '#2d3748', fontSize: '1.1rem' }}>📋 Review Your Answers</h3>
             {filteredQuestions.map((question, index) => {
               const userAnswer = selectedAnswers[index];
-              const isCorrect = userAnswer === question.correctAnswer;
+              const isCorrect = userAnswer == question.correctAnswer;
               
               return (
                 <div key={index} style={{ marginBottom: '25px', padding: '20px', backgroundColor: '#f7fafc', borderRadius: '10px' }}>
