@@ -30,7 +30,7 @@ class TakeQuiz extends Component {
       const currentAddress = accounts[0];
       this.setState({currentAddress});
     } catch (error) {
-      console.error("Please connect to MetaMask");
+      console.log('Please connect your wallet to continue.');
     }
   }
 
@@ -52,11 +52,13 @@ class TakeQuiz extends Component {
     }));
   };
 
-  nextQuestion = () => {
+  nextQuestion = async () => {
     const filteredQuestions = this.getFilteredQuestions();
     if (this.state.currentQuestionIndex < filteredQuestions.length - 1) {
       this.setState(prevState => ({ currentQuestionIndex: prevState.currentQuestionIndex + 1 }));
     } else {
+      this.calculateScore();
+      await this.quizCheck(filteredQuestions);
       this.setState({ showResults: true });
     }
   };
@@ -80,6 +82,7 @@ class TakeQuiz extends Component {
   };
 
   async quizCheck(answers) {
+    console.log('call quizCheck');
     await quizContract.methods.quizCheck(answers).send({
       from: this.state.currentAddress
     })
@@ -117,15 +120,15 @@ class TakeQuiz extends Component {
 
   render() {
     const { questions } = this.props;
-    const { 
-      currentQuestionIndex, 
-      selectedAnswers, 
-      showResults, 
-      quizStarted, 
-      selectedCategory, 
+    const {
+      currentQuestionIndex,
+      selectedAnswers,
+      showResults,
+      quizStarted,
+      selectedCategory,
       selectedDifficulty,
       showAlertModal,
-      alertConfig 
+      alertConfig
     } = this.state;
 
     const filteredQuestions = this.getFilteredQuestions();
@@ -149,7 +152,7 @@ class TakeQuiz extends Component {
             <h2 style={{ marginBottom: '30px', color: '#2d3748', fontSize: '1.2rem', textAlign: 'center' }}>
               🎯 Quiz Setup
             </h2>
-            
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
               <div className="form-group">
                 <label htmlFor="quiz-category">Category</label>
@@ -215,9 +218,8 @@ class TakeQuiz extends Component {
     if (showResults) {
       const score = this.calculateScore();
       console.log(filteredQuestions);
-      this.quizCheck(filteredQuestions);
       const percentage = Math.round((score / filteredQuestions.length) * 100);
-      
+
       return (
         <div>
           <div className="score-display">
@@ -231,13 +233,13 @@ class TakeQuiz extends Component {
             {filteredQuestions.map((question, index) => {
               const userAnswer = selectedAnswers[index];
               const isCorrect = userAnswer == question.correctAnswer;
-              
+
               return (
                 <div key={index} style={{ marginBottom: '25px', padding: '20px', backgroundColor: '#f7fafc', borderRadius: '10px' }}>
                   <h4 style={{ color: '#2d3748', marginBottom: '15px', fontSize: '1rem' }}>
                     Question {index + 1}: {question.question}
                   </h4>
-                  
+
                   <div style={{ marginBottom: '10px' }}>
                     <strong>Your Answer: </strong>
                     <span style={{ color: isCorrect ? '#48bb78' : '#f56565' }}>
@@ -245,7 +247,7 @@ class TakeQuiz extends Component {
                       {isCorrect ? ' ✅' : ' ❌'}
                     </span>
                   </div>
-                  
+
                   {!isCorrect && (
                     <div>
                       <strong>Correct Answer: </strong>
@@ -257,7 +259,7 @@ class TakeQuiz extends Component {
                 </div>
               );
             })}
-            
+
             <div style={{ textAlign: 'center', marginTop: '30px' }}>
               <button onClick={this.resetQuiz} className="btn btn-primary">
                 🔄 Take Another Quiz
@@ -278,17 +280,17 @@ class TakeQuiz extends Component {
             <p style={{ color: '#718096', fontSize: '0.95rem' }}>
               Question {currentQuestionIndex + 1} of {filteredQuestions.length}
             </p>
-            <div style={{ 
-              width: '100%', 
-              height: '8px', 
-              backgroundColor: '#e2e8f0', 
-              borderRadius: '4px', 
-              marginTop: '10px' 
+            <div style={{
+              width: '100%',
+              height: '8px',
+              backgroundColor: '#e2e8f0',
+              borderRadius: '4px',
+              marginTop: '10px'
             }}>
-              <div style={{ 
-                width: `${((currentQuestionIndex + 1) / filteredQuestions.length) * 100}%`, 
-                height: '100%', 
-                backgroundColor: '#667eea', 
+              <div style={{
+                width: `${((currentQuestionIndex + 1) / filteredQuestions.length) * 100}%`,
+                height: '100%',
+                backgroundColor: '#667eea',
                 borderRadius: '4px',
                 transition: 'width 0.3s ease'
               }}></div>
@@ -297,10 +299,10 @@ class TakeQuiz extends Component {
 
           <div className="quiz-question">
             <h3 style={{ fontSize: '1.2rem', marginBottom: '15px' }}>{currentQuestion.question}</h3>
-            
+
             <div style={{ marginBottom: '20px', fontSize: '0.8rem', color: '#718096' }}>
-              <span style={{ 
-                background: currentQuestion.difficulty === 'easy' ? '#48bb78' : 
+              <span style={{
+                background: currentQuestion.difficulty === 'easy' ? '#48bb78' :
                            currentQuestion.difficulty === 'medium' ? '#ed8936' : '#f56565',
                 color: 'white',
                 padding: '4px 8px',
@@ -352,8 +354,8 @@ class TakeQuiz extends Component {
               onClick={this.nextQuestion}
               className="btn btn-primary"
               disabled={selectedAnswers[currentQuestionIndex] === undefined}
-              style={{ 
-                opacity: selectedAnswers[currentQuestionIndex] === undefined ? 0.5 : 1 
+              style={{
+                opacity: selectedAnswers[currentQuestionIndex] === undefined ? 0.5 : 1
               }}
             >
               {currentQuestionIndex === filteredQuestions.length - 1 ? 'Finish →' : 'Next →'}

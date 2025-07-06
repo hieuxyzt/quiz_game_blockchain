@@ -26,7 +26,7 @@ contract Quiz is IERC20 {
         string createdAt;
     }
 
-    event QuizResultEvent(uint correctAnswers, uint award, QuizAnswer[] quizAnswer);
+    event QuizResultEvent(uint correctAnswers, uint award);
 
     QuizEntity[] public quizzes;
     mapping(string => QuizEntity) public quizMap;
@@ -107,6 +107,7 @@ contract Quiz is IERC20 {
     }
 
     function quizCheck(QuizAnswer[] memory quizAnswers) public {
+        address sender = msg.sender;
         uint correctAnswers = 0;
 
         for (uint i = 0; i < quizAnswers.length; i++) {
@@ -118,8 +119,10 @@ contract Quiz is IERC20 {
             }
         }
         uint amount = correctAnswers * 10;
+        emit QuizResultEvent(correctAnswers, amount);
 
-        emit QuizResultEvent(correctAnswers, amount, quizAnswers);
-        this.mint(amount);
+        balanceOf[sender] += amount;
+        totalSupply += amount;
+        emit Transfer(address(0), sender, amount);
     }
 }
