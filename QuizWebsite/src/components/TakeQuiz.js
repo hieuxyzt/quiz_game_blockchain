@@ -20,12 +20,19 @@ class TakeQuiz extends Component {
         title: '',
         message: '',
         variant: 'info'
-      }
+      },
+      // Loading state for quiz submission
+      isSubmittingQuiz: false,
+      showLoadingModal: false,
+      nftSymbol: '',
     };
   }
 
   async componentDidMount() {
     try {
+      const nftSymbol = await quizContract.methods.symbol().call();
+      this.setState({nftSymbol});
+
       const accounts = await web3.eth.getAccounts();
       const currentAddress = accounts[0];
       this.setState({currentAddress});
@@ -57,9 +64,25 @@ class TakeQuiz extends Component {
     if (this.state.currentQuestionIndex < filteredQuestions.length - 1) {
       this.setState(prevState => ({ currentQuestionIndex: prevState.currentQuestionIndex + 1 }));
     } else {
-      this.calculateScore();
-      await this.quizCheck(filteredQuestions);
-      this.setState({ showResults: true });
+      // Show loading modal and submit quiz
+      this.setState({ isSubmittingQuiz: true, showLoadingModal: true });
+      try {
+        this.calculateScore();
+        await this.quizCheck(filteredQuestions);
+        this.setState({ showResults: true, isSubmittingQuiz: false, showLoadingModal: false });
+      } catch (error) {
+        console.error('Error submitting quiz:', error);
+        this.setState({
+          isSubmittingQuiz: false,
+          showLoadingModal: false,
+          alertConfig: {
+            title: 'Submission Error',
+            message: 'There was an error submitting your quiz results to the blockchain. Please try again.',
+            variant: 'danger'
+          },
+          showAlertModal: true
+        });
+      }
     }
   };
 
@@ -93,7 +116,9 @@ class TakeQuiz extends Component {
       currentQuestionIndex: 0,
       selectedAnswers: {},
       showResults: false,
-      quizStarted: false
+      quizStarted: false,
+      isSubmittingQuiz: false,
+      showLoadingModal: false
     });
   };
 
@@ -128,7 +153,8 @@ class TakeQuiz extends Component {
       selectedCategory,
       selectedDifficulty,
       showAlertModal,
-      alertConfig
+      alertConfig,
+      showLoadingModal
     } = this.state;
 
     const filteredQuestions = this.getFilteredQuestions();
@@ -225,7 +251,7 @@ class TakeQuiz extends Component {
           <div className="score-display">
             <h2 style={{ fontSize: '1.2rem' }}>🎉 Quiz Complete!</h2>
             <p style={{ fontSize: '1rem' }}>Your Score: {score} out of {filteredQuestions.length}</p>
-            <p style={{ fontSize: '1rem' }}>Percentage: {percentage}%</p>
+            <p style={{ fontSize: '1rem' }}>Percentage: {percentage}% _ Award: {score * 10} {this.state.nftSymbol}</p>
           </div>
 
           <div className="card">
@@ -370,6 +396,31 @@ class TakeQuiz extends Component {
           message={alertConfig.message}
           variant={alertConfig.variant}
         />
+
+        {/* Loading Modal */}
+        {showLoadingModal && (
+          <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}}
+               tabIndex="-1">
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    🎯 Submitting Quiz...
+                  </h5>
+                </div>
+                <div className="modal-body text-center">
+                  <div className="spinner-border text-primary mb-3" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p>
+                    Please wait while your quiz results are being submitted to the blockchain...
+                  </p>
+                  <small className="text-muted">This may take a few moments.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
