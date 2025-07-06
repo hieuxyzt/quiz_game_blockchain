@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import AlertModal from './AlertModal';
 import quizContract from "../contract/quizContract";
+import web3 from "../contract/web3";
 
 class TakeQuiz extends Component {
   constructor(props) {
@@ -21,6 +22,12 @@ class TakeQuiz extends Component {
         variant: 'info'
       }
     };
+  }
+
+  async componentDidMount() {
+    const accounts = await web3.eth.getAccounts();
+    const currentAddress = accounts[0];
+    this.setState({currentAddress});
   }
 
   // Filter questions based on selected criteria
@@ -68,10 +75,10 @@ class TakeQuiz extends Component {
     return correct;
   };
 
-  async quizCheck(score, questions) {
-    // await quizContract.methods.quizCheck().send({
-    //   from: this.state.currentAddress
-    // })
+  async quizCheck(answers) {
+    await quizContract.methods.quizCheck(answers).send({
+      from: this.state.currentAddress
+    })
   }
 
   resetQuiz = () => {
@@ -204,7 +211,7 @@ class TakeQuiz extends Component {
     if (showResults) {
       const score = this.calculateScore();
       console.log(filteredQuestions);
-      this.quizCheck(score, filteredQuestions);
+      this.quizCheck(filteredQuestions);
       const percentage = Math.round((score / filteredQuestions.length) * 100);
       
       return (

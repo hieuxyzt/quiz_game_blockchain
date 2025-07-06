@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+// SPDX-License-Identifier: GPL-3.0
 
+pragma solidity >=0.8.0 < 0.9.0;
 import "./IERC20.sol";
 
 contract Quiz is IERC20 {
@@ -20,9 +20,16 @@ contract Quiz is IERC20 {
         string category;
         string createdAt;
     }
-    event QuizResult(address indexed user, uint score, QuizEntity[] quizAnswers);
+    struct QuizAnswer {
+        string id;
+        uint answer;
+        string createdAt;
+    }
+
+    event QuizResultEvent(uint correctAnswers, uint award, QuizAnswer[] quizAnswer);
 
     QuizEntity[] public quizzes;
+    mapping(string => QuizEntity) public quizMap;
 
     function transfer(address recipient, uint amount) external returns (bool) {
         balanceOf[msg.sender] -= amount;
@@ -68,6 +75,7 @@ contract Quiz is IERC20 {
     function addAllQuizzes(QuizEntity[] memory addQuizzes) public {
         for (uint i = 0; i < addQuizzes.length; i++) {
             quizzes.push(addQuizzes[i]);
+            quizMap[addQuizzes[i].id] = addQuizzes[i];
         }
     }
 
@@ -75,6 +83,8 @@ contract Quiz is IERC20 {
         uint index = findQuizById(id);
         quizzes[index] = quizzes[quizzes.length - 1];
         quizzes.pop();
+
+        delete quizMap[id];
     }
 
     function deleteAllQuizzes() public {
@@ -84,6 +94,7 @@ contract Quiz is IERC20 {
     function updateQuiz(string memory id, QuizEntity memory quiz) public {
         uint index = findQuizById(id);
         quizzes[index] = quiz;
+        quizMap[id] = quiz;
     }
 
     function findQuizById(string memory id) private view returns (uint index) {
@@ -95,14 +106,20 @@ contract Quiz is IERC20 {
         revert("Quiz not found");
     }
 
-    function quizCheck(uint score, QuizEntity[] memory quizAnswers) public view {
+    function quizCheck(QuizAnswer[] memory quizAnswers) public {
         uint correctAnswers = 0;
+
         for (uint i = 0; i < quizAnswers.length; i++) {
-            if (quizzes[i].correctAnswer == quizAnswers[i].correctAnswer) {
+            QuizAnswer memory quizAnswer = quizAnswers[i];
+            QuizEntity memory quizEntity = quizMap[quizAnswer.id];
+
+            if(quizAnswer.answer == quizEntity.correctAnswer) {
                 correctAnswers++;
             }
         }
-        return correctAnswers >= score;
+        uint amount = correctAnswers * 10;
 
+        emit QuizResultEvent(correctAnswers, amount, quizAnswers);
+        this.mint(amount);
     }
 }
