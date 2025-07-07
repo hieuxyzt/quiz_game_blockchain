@@ -118,6 +118,15 @@ class App extends Component {
     };
 
     setCurrentView = (view) => {
+        // Clear any existing hover effects on all buttons
+        const buttons = document.querySelectorAll('.sidebar-desktop button');
+        buttons.forEach(button => {
+            if (button.style.backgroundColor === 'rgba(255, 255, 255, 0.1)') {
+                button.style.backgroundColor = '';
+                button.style.paddingLeft = '';
+            }
+        });
+        
         this.setState({currentView: view});
     };
 
@@ -145,14 +154,14 @@ class App extends Component {
                             }}
                             onMouseEnter={(e) => {
                                 if (currentView !== 'quiz') {
-                                    e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                                    e.target.style.paddingLeft = '1.5rem';
+                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.paddingLeft = '1.5rem';
                                 }
                             }}
                             onMouseLeave={(e) => {
                                 if (currentView !== 'quiz') {
-                                    e.target.style.backgroundColor = 'transparent';
-                                    e.target.style.paddingLeft = '1rem';
+                                    e.currentTarget.style.backgroundColor = '';
+                                    e.currentTarget.style.paddingLeft = '';
                                 }
                             }}
                         >
@@ -170,14 +179,14 @@ class App extends Component {
                             }}
                             onMouseEnter={(e) => {
                                 if (currentView !== 'history') {
-                                    e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                                    e.target.style.paddingLeft = '1.5rem';
+                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.paddingLeft = '1.5rem';
                                 }
                             }}
                             onMouseLeave={(e) => {
                                 if (currentView !== 'history') {
-                                    e.target.style.backgroundColor = 'transparent';
-                                    e.target.style.paddingLeft = '1rem';
+                                    e.currentTarget.style.backgroundColor = '';
+                                    e.currentTarget.style.paddingLeft = '';
                                 }
                             }}
                         >
@@ -195,14 +204,14 @@ class App extends Component {
                             }}
                             onMouseEnter={(e) => {
                                 if (currentView !== 'create') {
-                                    e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                                    e.target.style.paddingLeft = '1.5rem';
+                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.paddingLeft = '1.5rem';
                                 }
                             }}
                             onMouseLeave={(e) => {
                                 if (currentView !== 'create') {
-                                    e.target.style.backgroundColor = 'transparent';
-                                    e.target.style.paddingLeft = '1rem';
+                                    e.currentTarget.style.backgroundColor = '';
+                                    e.currentTarget.style.paddingLeft = '';
                                 }
                             }}
                         >
@@ -220,14 +229,14 @@ class App extends Component {
                             }}
                             onMouseEnter={(e) => {
                                 if (currentView !== 'view') {
-                                    e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                                    e.target.style.paddingLeft = '1.5rem';
+                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.paddingLeft = '1.5rem';
                                 }
                             }}
                             onMouseLeave={(e) => {
                                 if (currentView !== 'view') {
-                                    e.target.style.backgroundColor = 'transparent';
-                                    e.target.style.paddingLeft = '1rem';
+                                    e.currentTarget.style.backgroundColor = '';
+                                    e.currentTarget.style.paddingLeft = '';
                                 }
                             }}
                         >
@@ -248,14 +257,14 @@ class App extends Component {
                             }}
                             onMouseEnter={(e) => {
                                 if (currentView !== 'nft') {
-                                    e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                                    e.target.style.paddingLeft = '1.5rem';
+                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.paddingLeft = '1.5rem';
                                 }
                             }}
                             onMouseLeave={(e) => {
                                 if (currentView !== 'nft') {
-                                    e.target.style.backgroundColor = 'transparent';
-                                    e.target.style.paddingLeft = '1rem';
+                                    e.currentTarget.style.backgroundColor = '';
+                                    e.currentTarget.style.paddingLeft = '';
                                 }
                             }}
                         >
