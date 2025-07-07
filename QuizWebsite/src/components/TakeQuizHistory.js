@@ -28,6 +28,10 @@ class TakeQuizHistory extends Component {
       const accounts = await web3.eth.getAccounts();
       const currentAddress = accounts[0];
       this.setState({ currentAddress });
+
+      const nftSymbol = await quizContract.methods.symbol().call();
+      this.setState({nftSymbol});
+
       await this.loadQuizHistory();
     } catch (error) {
       console.error('Error loading quiz history:', error);
@@ -63,7 +67,7 @@ class TakeQuizHistory extends Component {
               question: 'What is the chemical symbol for gold?',
               options: ['Au', 'Ag', 'Go', 'Gd'],
               correctAnswer: 0,
-              userAnswer: 0,
+              answer: 0,
               isCorrect: true,
               category: 'chemistry',
               difficulty: 'easy'
@@ -72,7 +76,7 @@ class TakeQuizHistory extends Component {
               question: 'Which planet is closest to the Sun?',
               options: ['Venus', 'Mercury', 'Earth', 'Mars'],
               correctAnswer: 1,
-              userAnswer: 1,
+              answer: 1,
               isCorrect: true,
               category: 'astronomy',
               difficulty: 'easy'
@@ -81,7 +85,7 @@ class TakeQuizHistory extends Component {
               question: 'What is the powerhouse of the cell?',
               options: ['Nucleus', 'Ribosome', 'Mitochondria', 'Endoplasmic Reticulum'],
               correctAnswer: 2,
-              userAnswer: 2,
+              answer: 2,
               isCorrect: true,
               category: 'biology',
               difficulty: 'medium'
@@ -90,7 +94,7 @@ class TakeQuizHistory extends Component {
               question: 'What gas makes up most of Earth\'s atmosphere?',
               options: ['Oxygen', 'Carbon Dioxide', 'Nitrogen', 'Hydrogen'],
               correctAnswer: 2,
-              userAnswer: 1,
+              answer: 1,
               isCorrect: false,
               category: 'earth science',
               difficulty: 'medium'
@@ -99,7 +103,7 @@ class TakeQuizHistory extends Component {
               question: 'How many bones are in the adult human body?',
               options: ['206', '208', '210', '212'],
               correctAnswer: 0,
-              userAnswer: 0,
+              answer: 0,
               isCorrect: true,
               category: 'anatomy',
               difficulty: 'hard'
@@ -120,7 +124,7 @@ class TakeQuizHistory extends Component {
               question: 'Who was the first President of the United States?',
               options: ['John Adams', 'George Washington', 'Thomas Jefferson', 'Benjamin Franklin'],
               correctAnswer: 1,
-              userAnswer: 1,
+              answer: 1,
               isCorrect: true,
               category: 'american history',
               difficulty: 'easy'
@@ -129,7 +133,7 @@ class TakeQuizHistory extends Component {
               question: 'In which year did World War II end?',
               options: ['1944', '1945', '1946', '1947'],
               correctAnswer: 1,
-              userAnswer: 0,
+              answer: 0,
               isCorrect: false,
               category: 'world history',
               difficulty: 'medium'
@@ -138,7 +142,7 @@ class TakeQuizHistory extends Component {
               question: 'Which ancient wonder of the world was located in Egypt?',
               options: ['Hanging Gardens', 'Lighthouse of Alexandria', 'Pyramids of Giza', 'Colossus of Rhodes'],
               correctAnswer: 2,
-              userAnswer: 2,
+              answer: 2,
               isCorrect: true,
               category: 'ancient history',
               difficulty: 'medium'
@@ -159,7 +163,7 @@ class TakeQuizHistory extends Component {
               question: 'What does API stand for?',
               options: ['Application Programming Interface', 'Advanced Programming Integration', 'Automated Process Integration', 'Application Process Interface'],
               correctAnswer: 0,
-              userAnswer: 0,
+              answer: 0,
               isCorrect: true,
               category: 'programming',
               difficulty: 'medium'
@@ -168,7 +172,7 @@ class TakeQuizHistory extends Component {
               question: 'Which company developed the React JavaScript library?',
               options: ['Google', 'Microsoft', 'Facebook', 'Apple'],
               correctAnswer: 2,
-              userAnswer: 2,
+              answer: 2,
               isCorrect: true,
               category: 'web development',
               difficulty: 'easy'
@@ -177,7 +181,7 @@ class TakeQuizHistory extends Component {
               question: 'What is the time complexity of binary search?',
               options: ['O(n)', 'O(log n)', 'O(n log n)', 'O(1)'],
               correctAnswer: 1,
-              userAnswer: 1,
+              answer: 1,
               isCorrect: true,
               category: 'algorithms',
               difficulty: 'hard'
@@ -186,7 +190,7 @@ class TakeQuizHistory extends Component {
               question: 'Which protocol is used for secure web communication?',
               options: ['HTTP', 'HTTPS', 'FTP', 'SMTP'],
               correctAnswer: 1,
-              userAnswer: 1,
+              answer: 1,
               isCorrect: true,
               category: 'networking',
               difficulty: 'medium'
@@ -195,7 +199,7 @@ class TakeQuizHistory extends Component {
               question: 'What does CPU stand for?',
               options: ['Central Processing Unit', 'Computer Processing Unit', 'Central Program Unit', 'Computer Program Unit'],
               correctAnswer: 0,
-              userAnswer: 1,
+              answer: 1,
               isCorrect: false,
               category: 'hardware',
               difficulty: 'easy'
@@ -204,7 +208,7 @@ class TakeQuizHistory extends Component {
               question: 'Which database type is MongoDB?',
               options: ['Relational', 'NoSQL', 'Graph', 'Time-series'],
               correctAnswer: 1,
-              userAnswer: 1,
+              answer: 1,
               isCorrect: true,
               category: 'databases',
               difficulty: 'medium'
@@ -213,7 +217,7 @@ class TakeQuizHistory extends Component {
               question: 'What is the default port for HTTPS?',
               options: ['80', '443', '8080', '3000'],
               correctAnswer: 1,
-              userAnswer: 1,
+              answer: 1,
               isCorrect: true,
               category: 'networking',
               difficulty: 'hard'
@@ -527,7 +531,7 @@ class TakeQuizHistory extends Component {
                             color: question.isCorrect ? '#48bb78' : '#f56565',
                             fontWeight: 'bold'
                           }}>
-                            {question.options[question.userAnswer]}
+                            {question.options[question.answer]}
                           </span>
                         </div>
 

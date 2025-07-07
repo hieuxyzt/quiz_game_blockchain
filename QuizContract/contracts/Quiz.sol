@@ -25,11 +25,32 @@ contract Quiz is IERC20 {
         uint answer;
         string createdAt;
     }
+    struct QuizResult {
+        uint id;
+        uint score;
+        uint correctAnswers;
+        uint totalQuestions;
+        uint reward;
+    }
+
+    struct AnswerDetail {
+        string id;
+        string question;
+        string[] options;
+        uint correctAnswer;
+        string difficulty;
+        string category;
+        string createdAt;
+        uint answer;
+    }
 
     event QuestionResultEvent(uint correctAnswers, uint award);
 
     QuestionEntity[] public questions;
     mapping(string => QuestionEntity) public questionMap;
+
+    mapping(address => QuizResult[]) public user_quizResults;
+    mapping(uint => AnswerDetail[]) public quiz_AnswerDetails;
 
     function transfer(address recipient, uint amount) external returns (bool) {
         balanceOf[msg.sender] -= amount;
@@ -110,6 +131,9 @@ contract Quiz is IERC20 {
         address sender = msg.sender;
         uint correctAnswers = 0;
 
+        uint quizResultId = block.timestamp;
+
+
         for (uint i = 0; i < questionAnswers.length; i++) {
             QuestionAnswer memory questionAnswer = questionAnswers[i];
             QuestionEntity memory questionEntity = questionMap[questionAnswer.id];
@@ -117,12 +141,42 @@ contract Quiz is IERC20 {
             if(questionAnswer.answer == questionEntity.correctAnswer) {
                 correctAnswers++;
             }
+
+            AnswerDetail memory answerDetail = AnswerDetail({
+                id: questionAnswer.id,
+                question: questionEntity.question,
+                options: questionEntity.options,
+                correctAnswer: questionEntity.correctAnswer,
+                difficulty: questionEntity.difficulty,
+                category: questionEntity.category,
+                createdAt: questionAnswer.createdAt,
+                answer: questionAnswer.answer
+            });
+            quiz_AnswerDetails[quizResultId].push(answerDetail);
+
         }
         uint amount = correctAnswers * 10;
+        QuizResult memory quizResult = QuizResult({
+            id: quizResultId,
+            score: correctAnswers,
+            correctAnswers: correctAnswers,
+            totalQuestions: questionAnswers.length,
+            reward: amount
+        });
+        user_quizResults[sender].push(quizResult);
+
         emit QuestionResultEvent(correctAnswers, amount);
 
         balanceOf[sender] += amount;
         totalSupply += amount;
         emit Transfer(address(0), sender, amount);
+    }
+
+    function getUserQuizResults() public view returns (QuizResult[] memory) {
+        return user_quizResults[msg.sender];
+    }
+
+    function getQuizDetail(uint quizResultId) external view returns (AnswerDetail[] memory){
+        return quiz_AnswerDetails[quizResultId];
     }
 }
