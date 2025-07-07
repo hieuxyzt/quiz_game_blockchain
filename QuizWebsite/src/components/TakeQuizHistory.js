@@ -84,7 +84,9 @@ class TakeQuizHistory extends Component {
     }
   };
 
-  handleQuizClick = (quiz) => {
+  handleQuizClick = async (quiz) => {
+    let questions = await quizContract.methods.getQuizDetail(quiz.id).call();
+    quiz.questions = questions;
     this.setState({
       selectedQuiz: quiz,
       showDetailModal: true
@@ -281,7 +283,7 @@ class TakeQuizHistory extends Component {
                   <div className="card mb-4" style={{ backgroundColor: '#f8f9fa' }}>
                     <div className="card-body">
                       <div className="row text-center">
-                        <div className="col-3">
+                        <div className="col-4">
                           <h6 className="text-muted mb-1">Score</h6>
                           <div style={{
                             fontSize: '1.1rem',
@@ -291,7 +293,7 @@ class TakeQuizHistory extends Component {
                             {selectedQuiz.correctAnswers}/{selectedQuiz.totalQuestions}
                           </div>
                         </div>
-                        <div className="col-3">
+                        <div className="col-4">
                           <h6 className="text-muted mb-1">Percentage</h6>
                           <div style={{
                             fontSize: '1.1rem',
@@ -301,14 +303,14 @@ class TakeQuizHistory extends Component {
                             {selectedQuiz.percentage}%
                           </div>
                         </div>
-                        <div className="col-3">
+                        <div className="col-4">
                           <h6 className="text-muted mb-1">Reward</h6>
                           <div style={{
                             fontSize: '1rem',
                             fontWeight: 'bold',
                             color: '#b7791f'
                           }}>
-                            {selectedQuiz.reward}
+                            {selectedQuiz.reward} {this.state.nftSymbol}
                           </div>
                         </div>
                       </div>
@@ -317,7 +319,9 @@ class TakeQuizHistory extends Component {
 
                   {/* Questions Review */}
                   <h6 className="mb-3">Question Review:</h6>
-                  {selectedQuiz.questions.map((question, index) => (
+                  {selectedQuiz.questions.map((question, index) => {
+                    question.isCorrect = question.answer === question.correctAnswer;
+                    return (
                     <div
                       key={index}
                       className="card mb-3"
@@ -386,7 +390,7 @@ class TakeQuizHistory extends Component {
                         )}
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
                 <div className="modal-footer">
                   <button 
