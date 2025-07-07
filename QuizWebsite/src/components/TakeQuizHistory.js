@@ -322,7 +322,7 @@ class TakeQuizHistory extends Component {
             {quizHistory.map((quiz) => (
               <div key={quiz.id} className="col-md-6 col-lg-4 mb-4">
                 <div 
-                  className="card h-70"
+                  className="card h-60"
                   style={{ 
                     cursor: 'pointer',
                     transition: 'transform 0.2s ease, box-shadow 0.2s ease',

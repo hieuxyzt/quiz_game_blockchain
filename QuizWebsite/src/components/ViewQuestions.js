@@ -108,7 +108,7 @@ class ViewQuestions extends Component {
 
     try {
       // Delete all questions one by one
-      await quizContract.methods.deleteAllQuizzes().send({
+      await quizContract.methods.deleteAllQuestions().send({
         from: this.state.currentAddress,
       });
 
@@ -262,7 +262,7 @@ class ViewQuestions extends Component {
     });
 
     try {
-      await quizContract.methods.updateQuiz(this.state.editForm.id, updatedQuestion).send({
+      await quizContract.methods.updateQuestion(this.state.editForm.id, updatedQuestion).send({
         from: this.state.currentAddress,
       });
 
@@ -303,7 +303,7 @@ class ViewQuestions extends Component {
       });
 
       try {
-        await quizContract.methods.deleteQuiz(this.state.questionToDelete).send({
+        await quizContract.methods.deleteQuestion(this.state.questionToDelete).send({
           from: this.state.currentAddress,
         });
 

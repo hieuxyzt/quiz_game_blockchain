@@ -35,7 +35,7 @@ class App extends Component {
     // Load questions from localStorage on component mount
     async componentDidMount() {
         try {
-            const questions = await quizContract.methods.getAllQuizzes().call();
+            const questions = await quizContract.methods.getAllQuestions().call();
             localStorage.setItem('quizQuestions', JSON.stringify(questions, this.replacer));
 
             const savedQuestions = localStorage.getItem('quizQuestions');
@@ -67,7 +67,7 @@ class App extends Component {
     addQuestions = (newQuestions) => {
         const questionsWithIds = newQuestions.map((question, index) => ({
             ...question,
-            id: (Date.now() + index).toString()
+            id: question.id
         }));
         this.setState(prevState => ({
             questions: [...prevState.questions, ...questionsWithIds]

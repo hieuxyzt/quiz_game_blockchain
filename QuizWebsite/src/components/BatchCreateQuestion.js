@@ -204,7 +204,7 @@ class BatchCreateQuestion extends Component {
     });
 
     try {
-      await quizContract.methods.addAllQuizzes(validQuestions).send({
+      await quizContract.methods.addAllQuestions(validQuestions).send({
           from: this.state.currentAddress,
       });
       this.props.onAddQuestions(validQuestions);
