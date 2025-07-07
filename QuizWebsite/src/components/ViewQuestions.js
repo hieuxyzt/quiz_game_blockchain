@@ -330,7 +330,7 @@ class ViewQuestions extends Component {
   };
 
   formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

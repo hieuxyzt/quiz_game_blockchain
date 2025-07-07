@@ -31,6 +31,7 @@ contract Quiz is IERC20 {
         uint correctAnswers;
         uint totalQuestions;
         uint reward;
+        string createdAt;
     }
 
     struct AnswerDetail {
@@ -161,7 +162,8 @@ contract Quiz is IERC20 {
             score: correctAnswers,
             correctAnswers: correctAnswers,
             totalQuestions: questionAnswers.length,
-            reward: amount
+            reward: amount,
+            createdAt: questionAnswers[questionAnswers.length - 1].createdAt
         });
         user_quizResults[sender].push(quizResult);
 

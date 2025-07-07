@@ -588,6 +588,9 @@ code {
   font-size: 0.9rem;
   color: #004085;
 }
+.card-body {
+  padding: 0 !important;
+}
 
 /* Responsive adjustments for NFT form */
 @media (max-width: 768px) {
