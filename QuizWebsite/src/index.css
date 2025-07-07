@@ -416,6 +416,11 @@ code {
   margin: 1.75rem auto !important;
 }
 
+.modal-dialog-half {
+  max-width: 50% !important;
+  margin: 1.75rem auto !important;
+}
+
 .modal-content {
   border-radius: 16px !important;
   border: none !important;

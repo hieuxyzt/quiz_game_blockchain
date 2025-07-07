@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import BatchCreateQuestion from './components/BatchCreateQuestion';
 import TakeQuiz from './components/TakeQuiz';
+import TakeQuizHistory from './components/TakeQuizHistory';
 import ViewQuestions from './components/ViewQuestions';
 import TokenTransfer from './components/TokenTransfer';
 
@@ -98,6 +99,8 @@ class App extends Component {
                 return <BatchCreateQuestion onAddQuestions={this.addQuestions}/>;
             case 'quiz':
                 return <TakeQuiz questions={questions}/>;
+            case 'history':
+                return <TakeQuizHistory/>;
             case 'view':
                 return (
                     <ViewQuestions
@@ -159,6 +162,31 @@ class App extends Component {
 
                         <button
                             className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
+                                currentView === 'history' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+                            }`}
+                            onClick={() => this.setCurrentView('history')}
+                            style={{
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                if (currentView !== 'history') {
+                                    e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    e.target.style.paddingLeft = '1.5rem';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (currentView !== 'history') {
+                                    e.target.style.backgroundColor = 'transparent';
+                                    e.target.style.paddingLeft = '1rem';
+                                }
+                            }}
+                        >
+                            <span className="fs-5">📚</span>
+                            <span>Quiz History</span>
+                        </button>
+
+                        <button
+                            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
                                 currentView === 'create' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
                             }`}
                             onClick={() => this.setCurrentView('create')}
@@ -203,7 +231,7 @@ class App extends Component {
                                 }
                             }}
                         >
-                            <span className="fs-5">📚</span>
+                            <span className="fs-5">✏</span>
                             <span className="flex-grow-1">View Questions</span>
                             <span className="badge bg-light bg-opacity-50 text-white rounded-pill">
               {questions.length}
@@ -257,6 +285,17 @@ class App extends Component {
 
                         <button
                             className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${
+                                currentView === 'history' ? 'bg-light bg-opacity-25 fw-semibold' : ''
+                            }`}
+                            onClick={() => this.setCurrentView('history')}
+                            style={{minWidth: '80px', fontSize: '0.75rem', minHeight: '70px'}}
+                        >
+                            <span className="fs-6">📚</span>
+                            <span>History</span>
+                        </button>
+
+                        <button
+                            className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${
                                 currentView === 'create' ? 'bg-light bg-opacity-25 fw-semibold' : ''
                             }`}
                             onClick={() => this.setCurrentView('create')}
@@ -273,7 +312,7 @@ class App extends Component {
                             onClick={() => this.setCurrentView('view')}
                             style={{minWidth: '80px', fontSize: '0.75rem', minHeight: '70px'}}
                         >
-                            <span className="fs-6">📚</span>
+                            <span className="fs-6">✏</span>
                             <span>View</span>
                             <span
                                 className="badge bg-light bg-opacity-75 text-dark position-absolute top-0 end-0 rounded-pill"
