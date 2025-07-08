@@ -68,12 +68,12 @@ MetaMask wallet integration
    - Copy [QuizContract.sol](QuizContract/contracts/Quiz.sol), [IERC20.sol](QuizContract/contracts/IERC20.sol) to Remix IDE folder tests
    - Compile the contracts, copy abi
    - Deploy the contract on Sepolia testnet, copy contract address
-   - Update the abi and contract address in [QuizContract.js](QuizWebsite/src/contract/quizContract.js)
+   - Update the contract abi, address in [QuizContract.js](QuizWebsite/src/contract/quizContract.js)
 2. **Manually**
    - [deploy.js](QuizContract/deploy.js)
    - get _sepoliaUrl_ from [Infura](https://www.infura.io/)
    - get _mnemonic_ from MetaMask from browser (settings -> security -> reveal secret recovery phrase)
-   - Update the abi and contract address in [QuizContract.js](QuizWebsite/src/contract/quizContract.js)
+   - Update the contract abi, address in [QuizContract.js](QuizWebsite/src/contract/quizContract.js)
    ```bash
    cd QuizContract
    npm install
@@ -81,15 +81,16 @@ MetaMask wallet integration
    ```
    
 ### Installation QuizWebsite
-
-1. **Install dependencies**
+1. **Update your own QuizContract (optional)**
+   - Update the contract abi, address in [QuizContract.js](QuizWebsite/src/contract/quizContract.js)
+2. **Install dependencies**
    ```bash
    cd QuizWebsite
    npm install
    npm start
    ```
 
-2. **Open your browser**
+3. **Open your browser**
    Navigate to `http://localhost:3000`
 
 ## 🔗 Links
