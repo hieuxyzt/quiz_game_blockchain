@@ -73,12 +73,12 @@ MetaMask wallet integration
    - [deploy.js](QuizContract/deploy.js)
    - get _sepoliaUrl_ from [Infura](https://www.infura.io/)
    - get _mnemonic_ from MetaMask from browser (settings -> security -> reveal secret recovery phrase)
+   - Update the abi and contract address in [QuizContract.js](QuizWebsite/src/contract/quizContract.js)
    ```bash
    cd QuizContract
    npm install
    node deploy.js
    ```
-   - Update the abi and contract address in [QuizContract.js](QuizWebsite/src/contract/quizContract.js)
    
 ### Installation QuizWebsite
 
