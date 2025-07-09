@@ -4,6 +4,7 @@ import TakeQuiz from './components/TakeQuiz';
 import TakeQuizHistory from './components/TakeQuizHistory';
 import ViewQuestions from './components/ViewQuestions';
 import TokenTransfer from './components/TokenTransfer';
+import TokenTransferHistory from './components/TokenTransferHistory';
 
 import quizContract from "./contract/quizContract";
 import AlertModal from "./components/AlertModal";
@@ -112,6 +113,8 @@ class App extends Component {
                 );
             case 'nft':
                 return <TokenTransfer/>;
+            case 'nftHistory':
+                return <TokenTransferHistory/>;
             default:
                 return <TakeQuiz questions={questions}/>;
         }
@@ -270,6 +273,30 @@ class App extends Component {
                         >
                             <span className="fs-5">🎨</span>
                             <span>Token Transfer</span>
+                        </button>
+                        <button
+                            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
+                                currentView === 'nftHistory' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+                            }`}
+                            onClick={() => this.setCurrentView('nftHistory')}
+                            style={{
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                if (currentView !== 'nftHistory') {
+                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.paddingLeft = '1.5rem';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (currentView !== 'nftHistory') {
+                                    e.currentTarget.style.backgroundColor = '';
+                                    e.currentTarget.style.paddingLeft = '';
+                                }
+                            }}
+                        >
+                            <span className="fs-5">🧾</span>
+                            <span>Transfer History</span>
                         </button>
                     </div>
                 </nav>
