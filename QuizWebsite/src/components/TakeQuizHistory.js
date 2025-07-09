@@ -30,7 +30,7 @@ class TakeQuizHistory extends Component {
       this.setState({ currentAddress });
 
       const nftSymbol = await quizContract.methods.symbol().call();
-      this.setState({nftSymbol});
+      this.setState({ nftSymbol });
 
       await this.loadQuizHistory();
     } catch (error) {
@@ -48,13 +48,13 @@ class TakeQuizHistory extends Component {
   }
 
   replacer = (key, value) => {
-    return typeof value === 'bigint' ? value.toString() : value;
+    return typeof value === 'bigint' ? parseInt(value.toString()) : value;
   }
 
   loadQuizHistory = async () => {
     try {
       this.setState({ loading: true });
-      
+
       // Mock data for now - replace with actual blockchain calls
       let mockHistory = await quizContract.methods.getUserQuizResults().call({
         from: this.state.currentAddress
@@ -196,7 +196,7 @@ class TakeQuizHistory extends Component {
                         </h5>
 
                       </div>
-                      <span 
+                      <span
                         style={{
                           backgroundColor: this.getScoreColor(quiz.percentage),
                           color: 'white',
@@ -218,9 +218,9 @@ class TakeQuizHistory extends Component {
                         </span>
                       </div>
                       <div className="progress" style={{ height: '8px' }}>
-                        <div 
-                          className="progress-bar" 
-                          style={{ 
+                        <div
+                          className="progress-bar"
+                          style={{
                             width: `${quiz.percentage}%`,
                             backgroundColor: this.getScoreColor(quiz.percentage)
                           }}
@@ -232,20 +232,20 @@ class TakeQuizHistory extends Component {
                       <div className="d-flex justify-content-between mb-1">
                         <span style={{ fontSize: '0.9rem' }}>Reward:</span>
                         <span
-                            style={{
-                              backgroundColor: '#ffd700',
-                              color: '#b7791f',
-                              padding: '4px 8px',
-                              borderRadius: '8px',
-                              fontSize: '0.75rem',
-                              fontWeight: 'bold',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
+                          style={{
+                            backgroundColor: '#ffd700',
+                            color: '#b7791f',
+                            padding: '4px 8px',
+                            borderRadius: '8px',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
                         >
-                        {quiz.reward} {this.state.nftSymbol}
-                      </span>
+                          {quiz.reward} {this.state.nftSymbol}
+                        </span>
                       </div>
                     </div>
 
@@ -264,8 +264,8 @@ class TakeQuizHistory extends Component {
 
         {/* Detail Modal */}
         {showDetailModal && selectedQuiz && (
-          <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}}
-               tabIndex="-1">
+          <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
+            tabIndex="-1">
             <div className="modal-dialog-half modal-lg modal-dialog-scrollable">
               <div className="modal-content">
                 <div className="modal-header">
@@ -322,80 +322,81 @@ class TakeQuizHistory extends Component {
                   {selectedQuiz.questions.map((question, index) => {
                     question.isCorrect = question.answer === question.correctAnswer;
                     return (
-                    <div
-                      key={index}
-                      className="card mb-3"
-                      style={{
-                        border: `1px solid ${question.isCorrect ? '#48bb78' : '#f56565'}`,
-                        backgroundColor: question.isCorrect ? '#f0fff4' : '#fff5f5'
-                      }}
-                    >
-                      <div className="card-body">
-                        {/* Category and Difficulty for each question */}
-                        <div className="mb-2 d-flex align-items-center gap-2 flex-wrap">
-                          <span
-                            style={{
-                              backgroundColor: this.getDifficultyColor(question.difficulty),
-                              color: 'white',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              fontSize: '0.7rem',
-                              textTransform: 'uppercase',
-                              fontWeight: 'bold'
-                            }}
-                          >
-                            {question.difficulty}
-                          </span>
-                          <span
-                            style={{
-                              backgroundColor: '#e2e8f0',
-                              color: '#4a5568',
-                              padding: '5px',
-                              left: '0',
-                              borderRadius: '12px',
-                              fontSize: '0.75rem',
-                              fontWeight: 'bold'
-                            }}
-                          >
-                          📂 {question.category}
-                          </span>
+                      <div
+                        key={index}
+                        className="card mb-3"
+                        style={{
+                          border: `1px solid ${question.isCorrect ? '#48bb78' : '#f56565'}`,
+                          backgroundColor: question.isCorrect ? '#f0fff4' : '#fff5f5'
+                        }}
+                      >
+                        <div className="card-body">
+                          {/* Category and Difficulty for each question */}
+                          <div className="mb-2 d-flex align-items-center gap-2 flex-wrap">
+                            <span
+                              style={{
+                                backgroundColor: this.getDifficultyColor(question.difficulty),
+                                color: 'white',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                fontSize: '0.7rem',
+                                textTransform: 'uppercase',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              {question.difficulty}
+                            </span>
+                            <span
+                              style={{
+                                backgroundColor: '#e2e8f0',
+                                color: '#4a5568',
+                                padding: '5px',
+                                left: '0',
+                                borderRadius: '12px',
+                                fontSize: '0.75rem',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              📂 {question.category}
+                            </span>
 
-                        </div>
-                        <div className="d-flex justify-content-between align-items-start mb-2">
-                          <h6 style={{ fontSize: '0.95rem', marginBottom: '10px' }}>
-                            Question {index + 1}: {question.question}
-                          </h6>
-                          <span style={{ fontSize: '1.2rem' }}>
-                            {question.isCorrect ? '✅' : '❌'}
-                          </span>
-                        </div>
-
-                        <div className="mb-2">
-                          <strong>Your Answer: </strong>
-                          <span style={{
-                            color: question.isCorrect ? '#48bb78' : '#f56565',
-                            fontWeight: 'bold'
-                          }}>
-                            {question.options[question.answer]}
-                          </span>
-                        </div>
-
-                        {!question.isCorrect && (
-                          <div>
-                            <strong>Correct Answer: </strong>
-                            <span style={{ color: '#48bb78', fontWeight: 'bold' }}>
-                              {question.options[question.correctAnswer]}
+                          </div>
+                          <div className="d-flex justify-content-between align-items-start mb-2">
+                            <h6 style={{ fontSize: '0.95rem', marginBottom: '10px' }}>
+                              Question {index + 1}: {question.question}
+                            </h6>
+                            <span style={{ fontSize: '1.2rem' }}>
+                              {question.isCorrect ? '✅' : '❌'}
                             </span>
                           </div>
-                        )}
+
+                          <div className="mb-2">
+                            <strong>Your Answer: </strong>
+                            <span style={{
+                              color: question.isCorrect ? '#48bb78' : '#f56565',
+                              fontWeight: 'bold'
+                            }}>
+                              {question.options[question.answer]}
+                            </span>
+                          </div>
+
+                          {!question.isCorrect && (
+                            <div>
+                              <strong>Correct Answer: </strong>
+                              <span style={{ color: '#48bb78', fontWeight: 'bold' }}>
+                                {question.options[question.correctAnswer]}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )})}
+                    )
+                  })}
                 </div>
                 <div className="modal-footer">
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary" 
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
                     onClick={this.closeDetailModal}
                   >
                     Close

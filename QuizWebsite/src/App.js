@@ -29,7 +29,7 @@ class App extends Component {
     }
 
     replacer = (key, value) => {
-        return typeof value === 'bigint' ? value.toString() : value;
+        return typeof value === 'bigint' ? parseInt(value.toString()) : value;
     }
 
     // Load questions from localStorage on component mount
@@ -37,7 +37,7 @@ class App extends Component {
         try {
             const questions = await quizContract.methods.getAllQuestions().call();
             localStorage.setItem('quizQuestions', JSON.stringify(questions, this.replacer));
-
+            console.log(123)
             const savedQuestions = localStorage.getItem('quizQuestions');
             if (savedQuestions) {
                 this.setState({questions: JSON.parse(savedQuestions)});
