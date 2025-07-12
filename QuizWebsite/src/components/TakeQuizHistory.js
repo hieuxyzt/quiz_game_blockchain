@@ -380,14 +380,6 @@ class TakeQuizHistory extends Component {
                             </span>
                           </div>
 
-                          {!question.isCorrect && (
-                            <div>
-                              <strong>Correct Answer: </strong>
-                              <span style={{ color: '#48bb78', fontWeight: 'bold' }}>
-                                {question.options[question.correctAnswer]}
-                              </span>
-                            </div>
-                          )}
                         </div>
                       </div>
                     )

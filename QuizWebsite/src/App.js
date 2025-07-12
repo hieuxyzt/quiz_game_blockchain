@@ -7,7 +7,7 @@ import TokenTransfer from './components/TokenTransfer';
 
 import quizContract from "./contract/quizContract";
 import AlertModal from "./components/AlertModal";
-import Web3 from 'web3';
+import SetManagers from './components/SetManagers';
 
 
 class App extends Component {
@@ -16,10 +16,8 @@ class App extends Component {
     constructor(props) {
         super(props);
 
-        const savedView = localStorage.getItem('currentView');
-
         this.state = {
-            currentView: savedView || 'quiz',
+            currentView: 'quiz',
             questions: [],
             account: '',
             role: 0, // 1: admin, 2: manager, 3: user
@@ -32,6 +30,7 @@ class App extends Component {
                 variant: 'info'
             },
             loadingQuestions: false,
+            takeQuizQuestions: []
         };
     }
 
@@ -114,8 +113,9 @@ class App extends Component {
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             const account = accounts[0];
 
-            // const role = await quizContract.methods.getRole(account).call();
-            this.setState({ account /*, role: parseInt(role)*/ });
+            const role = await quizContract.methods.getRole(account).call();
+
+            this.setState({ account, role: parseInt(role) });
 
             return account;
 
@@ -152,6 +152,7 @@ class App extends Component {
             localStorage.setItem('quizQuestions', JSON.stringify(questions, this.replacer));
             const saved = localStorage.getItem('quizQuestions');
             if (saved) this.setState({ questions: JSON.parse(saved) });
+
         } catch {
             this.setState({
                 showAlertModal: true,
@@ -169,9 +170,6 @@ class App extends Component {
     componentDidUpdate(prevProps, prevState) {
         if (prevState.questions !== this.state.questions) {
             localStorage.setItem('quizQuestions', JSON.stringify(this.state.questions));
-        }
-        if (prevState.currentView !== this.state.currentView) {
-            localStorage.setItem('currentView', this.state.currentView);
         }
     }
 
@@ -224,12 +222,12 @@ class App extends Component {
     };
 
     renderCurrentView = () => {
-        const { currentView, questions } = this.state;
+        const { currentView, questions, takeQuizQuestions, role } = this.state;
         switch (currentView) {
             case 'create':
                 return <BatchCreateQuestion onAddQuestions={this.addQuestions} />;
             case 'quiz':
-                return <TakeQuiz questions={questions} />;
+                return <TakeQuiz questions={takeQuizQuestions} />;
             case 'history':
                 return <TakeQuizHistory />;
             case 'view':
@@ -242,7 +240,9 @@ class App extends Component {
                     />
                 );
             case 'nft':
-                return <TokenTransfer />;
+                return <TokenTransfer role ={role} />;
+            case 'manager':
+                return <SetManagers />
             default:
                 return <TakeQuiz questions={questions} />;
         }
@@ -377,58 +377,59 @@ class App extends Component {
                             <span className="fs-5">📚</span>
                             <span>Quiz History</span>
                         </button>
-
-                        <button
-                            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${currentView === 'create' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
-                                }`}
-                            onClick={() => this.setCurrentView('create')}
-                            style={{
-                                transition: 'all 0.3s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                                if (currentView !== 'create') {
-                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                                    e.currentTarget.style.paddingLeft = '1.5rem';
-                                }
-                            }}
-                            onMouseLeave={(e) => {
-                                if (currentView !== 'create') {
-                                    e.currentTarget.style.backgroundColor = '';
-                                    e.currentTarget.style.paddingLeft = '';
-                                }
-                            }}
-                        >
-                            <span className="fs-5">📝</span>
-                            <span>Create Questions</span>
-                        </button>
-
-                        <button
-                            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 position-relative ${currentView === 'view' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
-                                }`}
-                            onClick={() => this.setCurrentView('view')}
-                            style={{
-                                transition: 'all 0.3s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                                if (currentView !== 'view') {
-                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                                    e.currentTarget.style.paddingLeft = '1.5rem';
-                                }
-                            }}
-                            onMouseLeave={(e) => {
-                                if (currentView !== 'view') {
-                                    e.currentTarget.style.backgroundColor = '';
-                                    e.currentTarget.style.paddingLeft = '';
-                                }
-                            }}
-                        >
-                            <span className="fs-5">✏</span>
-                            <span className="flex-grow-1">View Questions</span>
-                            <span className="badge bg-light bg-opacity-50 text-white rounded-pill">
-                                {questions.length}
-                            </span>
-                        </button>
-
+                        {(this.state.role <= 2) && (
+                            <button
+                                className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${currentView === 'create' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+                                    }`}
+                                onClick={() => this.setCurrentView('create')}
+                                style={{
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (currentView !== 'create') {
+                                        e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                        e.currentTarget.style.paddingLeft = '1.5rem';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (currentView !== 'create') {
+                                        e.currentTarget.style.backgroundColor = '';
+                                        e.currentTarget.style.paddingLeft = '';
+                                    }
+                                }}
+                            >
+                                <span className="fs-5">📝</span>
+                                <span>Create Questions</span>
+                            </button>
+                        )}
+                        {(this.state.role <= 2) && (
+                            <button
+                                className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 position-relative ${currentView === 'view' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+                                    }`}
+                                onClick={() => this.setCurrentView('view')}
+                                style={{
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (currentView !== 'view') {
+                                        e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                        e.currentTarget.style.paddingLeft = '1.5rem';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (currentView !== 'view') {
+                                        e.currentTarget.style.backgroundColor = '';
+                                        e.currentTarget.style.paddingLeft = '';
+                                    }
+                                }}
+                            >
+                                <span className="fs-5">✏</span>
+                                <span className="flex-grow-1">View Questions</span>
+                                <span className="badge bg-light bg-opacity-50 text-white rounded-pill">
+                                    {questions.length}
+                                </span>
+                            </button>
+                        )}
                         <button
                             className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${currentView === 'nft' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
                                 }`}
@@ -448,10 +449,37 @@ class App extends Component {
                                     e.currentTarget.style.paddingLeft = '';
                                 }
                             }}
+                            role={this.state.role}
                         >
                             <span className="fs-5">🎨</span>
                             <span>Token Transfer</span>
                         </button>
+                        {(this.state.role == 1) && (
+                            <button
+                                className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${currentView === 'manager' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+                                    }`}
+                                onClick={() => this.setCurrentView('manager')}
+                                style={{
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (currentView !== 'nft') {
+                                        e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                        e.currentTarget.style.paddingLeft = '1.5rem';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (currentView !== 'nft') {
+                                        e.currentTarget.style.backgroundColor = '';
+                                        e.currentTarget.style.paddingLeft = '';
+                                    }
+                                }}
+                                role={this.state.role}
+                            >
+                                <span className="fs-5">⚙️</span>
+                                <span>Setup Managers</span>
+                            </button>
+                        )}
                     </div>
                 </nav>
 
@@ -481,32 +509,33 @@ class App extends Component {
                             <span className="fs-6">📚</span>
                             <span>History</span>
                         </button>
-
-                        <button
-                            className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${currentView === 'create' ? 'bg-light bg-opacity-25 fw-semibold' : ''
-                                }`}
-                            onClick={() => this.setCurrentView('create')}
-                            style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
-                        >
-                            <span className="fs-6">📝</span>
-                            <span>Create</span>
-                        </button>
-
-                        <button
-                            className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 position-relative ${currentView === 'view' ? 'bg-light bg-opacity-25 fw-semibold' : ''
-                                }`}
-                            onClick={() => this.setCurrentView('view')}
-                            style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
-                        >
-                            <span className="fs-6">✏</span>
-                            <span>View</span>
-                            <span
-                                className="badge bg-light bg-opacity-75 text-dark position-absolute top-0 end-0 rounded-pill"
-                                style={{ fontSize: '0.6rem' }}>
-                                {questions.length}
-                            </span>
-                        </button>
-
+                        {(this.state.role <= 2) && (
+                            <button
+                                className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${currentView === 'create' ? 'bg-light bg-opacity-25 fw-semibold' : ''
+                                    }`}
+                                onClick={() => this.setCurrentView('create')}
+                                style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
+                            >
+                                <span className="fs-6">📝</span>
+                                <span>Create</span>
+                            </button>
+                        )}
+                        {(this.state.role <= 2) && (
+                            <button
+                                className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 position-relative ${currentView === 'view' ? 'bg-light bg-opacity-25 fw-semibold' : ''
+                                    }`}
+                                onClick={() => this.setCurrentView('view')}
+                                style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
+                            >
+                                <span className="fs-6">✏</span>
+                                <span>View</span>
+                                <span
+                                    className="badge bg-light bg-opacity-75 text-dark position-absolute top-0 end-0 rounded-pill"
+                                    style={{ fontSize: '0.6rem' }}>
+                                    {questions.length}
+                                </span>
+                            </button>
+                        )}
                         <button
                             className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${currentView === 'nft' ? 'bg-light bg-opacity-25 fw-semibold' : ''
                                 }`}
@@ -516,6 +545,17 @@ class App extends Component {
                             <span className="fs-6">🎨</span>
                             <span>Token</span>
                         </button>
+                        {(this.state.role == 1) && (
+                            <button
+                                className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${currentView === 'manager' ? 'bg-light bg-opacity-25 fw-semibold' : ''
+                                    }`}
+                                onClick={() => this.setCurrentView('manager')}
+                                style={{ minWidth: '80px', fontSize: '0.75rem', minHeight: '70px' }}
+                            >
+                                <span className="fs-6">⚙️</span>
+                                <span>Managers</span>
+                            </button>
+                        )}
                     </div>
                 </nav>
 
