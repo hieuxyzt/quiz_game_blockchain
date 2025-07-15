@@ -185,6 +185,7 @@ contract Quiz is IERC20 {
             quiz_AnswerDetails[quizResultId].push(answerDetail);
         }
         uint amount = correctAnswers * 10;
+        if(balanceOf[owner] < amount) revert("Not enough Token left"); 
         QuizResult memory quizResult = QuizResult({
             id: quizResultId,
             score: correctAnswers,
@@ -196,10 +197,10 @@ contract Quiz is IERC20 {
         user_quizResults[sender].push(quizResult);
 
         emit QuestionResultEvent(correctAnswers, amount);
-
+        balanceOf[owner] -= amount;
         balanceOf[sender] += amount;
-        totalSupply += amount;
-        emit Transfer(address(0), sender, amount);
+        totalSupply -= amount;
+        emit Transfer(owner, sender, amount);
     }
 
     function getUserQuizResults() public view returns (QuizResult[] memory) {

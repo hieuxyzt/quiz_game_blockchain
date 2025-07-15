@@ -241,7 +241,7 @@ class App extends Component {
                     />
                 );
             case 'nft':
-       return <TokenTransfer role ={role} />;
+                return <TokenTransfer role ={role} />;
             case 'nftHistory':
                 return <TokenTransferHistory/>;
             case 'manager':
