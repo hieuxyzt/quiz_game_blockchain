@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import quizContract from "../contract/quizContract";
 import web3 from "../contract/web3";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -40,11 +40,11 @@ class TokenTransfer extends Component {
 
             const accounts = await web3.eth.getAccounts();
             const currentAddress = accounts[0];
-            this.setState({currentAddress});
+            this.setState({ currentAddress });
 
             await this.updateUserBalance(currentAddress);
 
-            this.setState({nftSymbol});
+            this.setState({ nftSymbol });
         } catch (error) {
             console.error("Please connect to MetaMask");
         }
@@ -75,7 +75,7 @@ class TokenTransfer extends Component {
     }
 
     handleInputChange = (e) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
         this.setState(prevState => ({
             formData: {
                 ...prevState.formData,
@@ -111,7 +111,7 @@ class TokenTransfer extends Component {
             // Refresh user balance after successful mint
             await this.updateUserBalance();
         } catch (error) {
-            console.log(error)
+         
             this.setState({
                 mintingResult: {
                     success: false,
@@ -121,7 +121,7 @@ class TokenTransfer extends Component {
                 showResultModal: true
             });
         } finally {
-            this.setState({isMinting: false});
+            this.setState({ isMinting: false });
         }
     }
 
@@ -165,7 +165,7 @@ class TokenTransfer extends Component {
                 showResultModal: true
             });
         } finally {
-            this.setState({isTransferring: false});
+            this.setState({ isTransferring: false });
         }
     };
 
@@ -181,7 +181,7 @@ class TokenTransfer extends Component {
     };
 
     closeLoadingModal = () => {
-        this.setState({showLoadingModal: false});
+        this.setState({ showLoadingModal: false });
     };
 
     closeResultModal = () => {
@@ -205,11 +205,11 @@ class TokenTransfer extends Component {
             showResultModal,
             currentOperation
         } = this.state;
-
+        const { role } = this.props
         return (
             <div>
                 <div className="card">
-                    <h2 style={{marginBottom: '30px', color: '#2d3748', fontSize: '1.2rem'}}>
+                    <h2 style={{ marginBottom: '30px', color: '#2d3748', fontSize: '1.2rem' }}>
                         🎨 Transfer Ethereum Token
                     </h2>
 
@@ -241,10 +241,10 @@ class TokenTransfer extends Component {
                                 padding: '12px',
                                 textAlign: 'center'
                             }}>
-                                <div style={{fontSize: '0.9rem', opacity: '0.8', marginBottom: '5px'}}>
+                                <div style={{ fontSize: '0.9rem', opacity: '0.8', marginBottom: '5px' }}>
                                     💰 ETH Balance
                                 </div>
-                                <div style={{fontSize: '1.1rem', fontWeight: 'bold'}}>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
                                     {userInfo.ethBalance}
                                 </div>
                             </div>
@@ -255,10 +255,10 @@ class TokenTransfer extends Component {
                                 padding: '12px',
                                 textAlign: 'center'
                             }}>
-                                <div style={{fontSize: '0.9rem', opacity: '0.8', marginBottom: '5px'}}>
+                                <div style={{ fontSize: '0.9rem', opacity: '0.8', marginBottom: '5px' }}>
                                     🎨 {nftSymbol} Balance
                                 </div>
-                                <div style={{fontSize: '1.1rem', fontWeight: 'bold'}}>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
                                     {userInfo.nftBalance}
                                 </div>
                             </div>
@@ -270,7 +270,7 @@ class TokenTransfer extends Component {
                                 textAlign: 'center',
                                 gridColumn: 'span 2'
                             }}>
-                                <div style={{fontSize: '0.9rem', opacity: '0.8', marginBottom: '5px'}}>
+                                <div style={{ fontSize: '0.9rem', opacity: '0.8', marginBottom: '5px' }}>
                                     📍 Wallet Address
                                 </div>
                                 <div style={{
@@ -292,7 +292,7 @@ class TokenTransfer extends Component {
                     </div>
 
                     <form onSubmit={this.handleTransfer}>
-                        <div className="nft-form-grid" style={{marginBottom: '20px'}}>
+                        <div className="nft-form-grid" style={{ marginBottom: '20px' }}>
                             <div className="form-group">
                                 <label htmlFor="contractAddress">Contract Address</label>
                                 <input
@@ -323,7 +323,7 @@ class TokenTransfer extends Component {
                                     step="1"
                                     min="0"
                                     required
-                                    style={{fontSize: '1rem'}}
+                                    style={{ fontSize: '1rem' }}
                                 />
                             </div>
 
@@ -337,7 +337,7 @@ class TokenTransfer extends Component {
                                     onChange={this.handleInputChange}
                                     placeholder="0x... (recipient address)"
                                     required
-                                    style={{fontSize: '1rem'}}
+                                    style={{ fontSize: '1rem' }}
                                 />
                             </div>
                         </div>
@@ -347,20 +347,20 @@ class TokenTransfer extends Component {
                                 type="submit"
                                 className="btn btn-primary"
                                 disabled={isTransferring}
-                                style={{minWidth: '150px'}}
+                                style={{ minWidth: '150px' }}
                             >
                                 {isTransferring ? '🔄 Transferring...' : '🚀 Transfer'}
                             </button>
-
-                            <button
-                                className="btn btn-primary"
-                                disabled={isMinting}
-                                style={{minWidth: '150px'}}
-                                onClick={this.mint}
-                            >
-                                {isMinting ? '🔄 Minting...' : `🚀 Mint ${nftSymbol}`}
-                            </button>
-
+                            {(role == 1) && (
+                                <button
+                                    className="btn btn-primary"
+                                    disabled={isMinting}
+                                    style={{ minWidth: '150px' }}
+                                    onClick={this.mint}
+                                >
+                                    {isMinting ? '🔄 Minting...' : `🚀 Mint ${nftSymbol}`}
+                                </button>
+                            )}
                             <button
                                 type="button"
                                 className="btn btn-secondary"
@@ -375,8 +375,8 @@ class TokenTransfer extends Component {
 
                 {/* Loading Modal */}
                 {showLoadingModal && (
-                    <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}}
-                         tabIndex="-1">
+                    <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
+                        tabIndex="-1">
                         <div className="modal-dialog modal-dialog-centered">
                             <div className="modal-content">
                                 <div className="modal-header">
@@ -402,8 +402,8 @@ class TokenTransfer extends Component {
 
                 {/* Result Modal */}
                 {showResultModal && (
-                    <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}}
-                         tabIndex="-1">
+                    <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
+                        tabIndex="-1">
                         <div className="modal-dialog modal-dialog-centered">
                             <div className="modal-content">
                                 <div className="modal-header">
@@ -411,7 +411,7 @@ class TokenTransfer extends Component {
                                         {(transferResult?.success || mintingResult?.success) ? '✅ Success!' : '❌ Transaction Failed'}
                                     </h5>
                                     <button type="button" className="btn-close"
-                                            onClick={this.closeResultModal}></button>
+                                        onClick={this.closeResultModal}></button>
                                 </div>
                                 <div className="modal-body">
                                     <div

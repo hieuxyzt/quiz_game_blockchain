@@ -25,25 +25,99 @@ class TakeQuiz extends Component {
       isSubmittingQuiz: false,
       showLoadingModal: false,
       nftSymbol: '',
+      quizHistory: [],
+      takeQuizQuestions: [],
+      loadingQuestions: false,
+      currentAddress: ''
     };
   }
 
   async componentDidMount() {
     try {
       const nftSymbol = await quizContract.methods.symbol().call();
-      this.setState({nftSymbol});
+      this.setState({ nftSymbol });
 
       const accounts = await web3.eth.getAccounts();
       const currentAddress = accounts[0];
-      this.setState({currentAddress});
+      if (currentAddress) {
+        this.setState({ currentAddress: currentAddress });
+        await this.loadQuestions()
+      }
     } catch (error) {
       console.log('Please connect your wallet to continue.');
     }
   }
 
-  // Filter questions based on selected criteria
+  replacer = (key, value) => {
+    return typeof value === 'bigint' ? parseInt(value.toString()) : value;
+  }
+
+
+  loadQuestions = async () => {
+    this.setState({ loadingQuestions: true });
+    try {
+      const questions = await quizContract.methods.getAllQuestions().call();
+
+      // Step 1: Fetch all quiz results (history) of the user
+      let quizHistory = await quizContract.methods.getUserQuizResults().call({
+        from: this.state.currentAddress
+      });
+
+      quizHistory = JSON.parse(JSON.stringify(quizHistory, this.replacer));
+
+      // Step 2: Collect all answered questions from all quiz attempts
+      const answeredMap = {}; // { [questionId]: { correct: true/false } }
+
+      for (let i = 0; i < quizHistory.length; i++) {
+        const quizId = quizHistory[i].id;
+
+        const answeredQuests = await quizContract.methods.getQuizDetail(quizId).call({
+          from: this.state.currentAddress
+        });
+
+        for (let j = 0; j < answeredQuests.length; j++) {
+          const a = answeredQuests[j];
+          if (!answeredMap[a.id]) {
+            answeredMap[a.id] = {
+              correct: a.answer === a.correctAnswer
+            };
+          } else {
+            // If the question was already answered correctly before, keep it as correct
+            answeredMap[a.id].correct = answeredMap[a.id].correct || (a.answer === a.correctAnswer);
+          }
+        }
+      }
+
+      // Step 3: Filter out questions that are either not answered or answered incorrectly
+      const takeQuizQuestions = [];
+
+      for (let i = 0; i < questions.length; i++) {
+        const q = questions[i];
+        if (!answeredMap[q.id] || !answeredMap[q.id].correct) {
+          takeQuizQuestions.push(q);
+        }
+      }
+
+      this.setState({ takeQuizQuestions: takeQuizQuestions });
+
+    } catch {
+      this.setState({
+        showAlertModal: true,
+        alertConfig: {
+          title: 'Error Fetching Questions',
+          message: 'Failed to load quiz questions from contract.',
+          variant: 'danger'
+        }
+      });
+    } finally {
+      this.setState({ loadingQuestions: false });
+    }
+  };
+
+
+  // Filter takeQuizQuestions based on selected criteria
   getFilteredQuestions = () => {
-    return this.props.questions.filter(question => {
+    return this.state.takeQuizQuestions.filter(question => {
       const categoryMatch = this.state.selectedCategory === 'all' || question.category === this.state.selectedCategory;
       const difficultyMatch = this.state.selectedDifficulty === 'all' || question.difficulty === this.state.selectedDifficulty;
       return categoryMatch && difficultyMatch;
@@ -144,7 +218,7 @@ class TakeQuiz extends Component {
   };
 
   render() {
-    const { questions } = this.props;
+
     const {
       currentQuestionIndex,
       selectedAnswers,
@@ -154,19 +228,32 @@ class TakeQuiz extends Component {
       selectedDifficulty,
       showAlertModal,
       alertConfig,
-      showLoadingModal
+      showLoadingModal,
+      takeQuizQuestions,
+      loadingQuestions
     } = this.state;
 
     const filteredQuestions = this.getFilteredQuestions();
-    const categories = [...new Set(questions.map(q => q.category))];
-    const difficulties = [...new Set(questions.map(q => q.difficulty))];
+    const categories = [...new Set(takeQuizQuestions.map(q => q.category))];
+    const difficulties = [...new Set(takeQuizQuestions.map(q => q.difficulty))];
 
-    if (questions.length === 0) {
+    if (takeQuizQuestions.length === 0) {
       return (
         <div className="empty-state">
           <h3>No Questions Available</h3>
-          <p>Create some questions first to start taking quizzes!</p>
-          <p>Use the "Create Questions" tab to add your first question.</p>
+          <p>You have taken all the questions for now.</p>
+          <p>Please wait for new questions available</p>
+        </div>
+      );
+    }
+
+    if (loadingQuestions) {
+      return (
+        <div className="d-flex justify-content-center align-items-center vh-100 bg-primary text-white">
+          <div className="text-center">
+            <div className="spinner-border text-light mb-4" style={{ width: '4rem', height: '4rem' }} />
+            <h4>Fetching Questions...</h4>
+          </div>
         </div>
       );
     }
@@ -243,7 +330,7 @@ class TakeQuiz extends Component {
 
     if (showResults) {
       const score = this.calculateScore();
-      console.log(filteredQuestions);
+     
       const percentage = Math.round((score / filteredQuestions.length) * 100);
 
       return (
@@ -274,14 +361,6 @@ class TakeQuiz extends Component {
                     </span>
                   </div>
 
-                  {!isCorrect && (
-                    <div>
-                      <strong>Correct Answer: </strong>
-                      <span style={{ color: '#48bb78' }}>
-                        {question.options[question.correctAnswer]} ✅
-                      </span>
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -329,7 +408,7 @@ class TakeQuiz extends Component {
             <div style={{ marginBottom: '20px', fontSize: '0.8rem', color: '#718096' }}>
               <span style={{
                 background: currentQuestion.difficulty === 'easy' ? '#48bb78' :
-                           currentQuestion.difficulty === 'medium' ? '#ed8936' : '#f56565',
+                  currentQuestion.difficulty === 'medium' ? '#ed8936' : '#f56565',
                 color: 'white',
                 padding: '4px 8px',
                 borderRadius: '4px',
@@ -399,8 +478,8 @@ class TakeQuiz extends Component {
 
         {/* Loading Modal */}
         {showLoadingModal && (
-          <div className="modal fade show" style={{display: 'block', backgroundColor: 'rgba(0,0,0,0.5)'}}
-               tabIndex="-1">
+          <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
+            tabIndex="-1">
             <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
                 <div className="modal-header">

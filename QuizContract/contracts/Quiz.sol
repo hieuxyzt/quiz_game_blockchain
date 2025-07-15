@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity >=0.8.0 < 0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 import "./IERC20.sol";
 
 contract Quiz is IERC20 {
@@ -10,6 +10,27 @@ contract Quiz is IERC20 {
     string public name = "Game Quiz Token";
     string public symbol = "GQT";
     uint8 public decimals = 18;
+    address public owner;
+    mapping(address => bool) public managers;
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the contract owner");
+        _;
+    }
+
+    modifier onlyManager() {
+        require(managers[msg.sender], "Not a manager");
+        _;
+    }
+
+    modifier onlyOwnerOrManager() {
+        require(msg.sender == owner || managers[msg.sender], "Not authorized");
+        _;
+    }
 
     struct QuestionEntity {
         string id;
@@ -78,7 +99,7 @@ contract Quiz is IERC20 {
         return true;
     }
 
-    function mint(uint amount) external {
+    function mint(uint amount) external onlyOwner {
         balanceOf[msg.sender] += amount;
         totalSupply += amount;
         emit Transfer(address(0), msg.sender, amount);
@@ -94,14 +115,16 @@ contract Quiz is IERC20 {
         return questions;
     }
 
-    function addAllQuestions(QuestionEntity[] memory addQuestions) public {
+    function addAllQuestions(
+        QuestionEntity[] memory addQuestions
+    ) public onlyOwnerOrManager {
         for (uint i = 0; i < addQuestions.length; i++) {
             questions.push(addQuestions[i]);
             questionMap[addQuestions[i].id] = addQuestions[i];
         }
     }
 
-    function deleteQuestion(string memory id) public {
+    function deleteQuestion(string memory id) public onlyOwnerOrManager {
         uint index = findQuestionById(id);
         questions[index] = questions[questions.length - 1];
         questions.pop();
@@ -109,17 +132,22 @@ contract Quiz is IERC20 {
         delete questionMap[id];
     }
 
-    function deleteAllQuestions() public {
+    function deleteAllQuestions() public onlyOwnerOrManager {
         delete questions;
     }
 
-    function updateQuestion(string memory id, QuestionEntity memory question) public {
+    function updateQuestion(
+        string memory id,
+        QuestionEntity memory question
+    ) public onlyOwnerOrManager {
         uint index = findQuestionById(id);
         questions[index] = question;
         questionMap[id] = question;
     }
 
-    function findQuestionById(string memory id) private view returns (uint index) {
+    function findQuestionById(
+        string memory id
+    ) private view returns (uint index) {
         for (uint i = 0; i < questions.length; i++) {
             if (keccak256(bytes(questions[i].id)) == keccak256(bytes(id))) {
                 return i;
@@ -134,12 +162,13 @@ contract Quiz is IERC20 {
 
         uint quizResultId = block.timestamp;
 
-
         for (uint i = 0; i < questionAnswers.length; i++) {
             QuestionAnswer memory questionAnswer = questionAnswers[i];
-            QuestionEntity memory questionEntity = questionMap[questionAnswer.id];
+            QuestionEntity memory questionEntity = questionMap[
+                questionAnswer.id
+            ];
 
-            if(questionAnswer.answer == questionEntity.correctAnswer) {
+            if (questionAnswer.answer == questionEntity.correctAnswer) {
                 correctAnswers++;
             }
 
@@ -154,7 +183,6 @@ contract Quiz is IERC20 {
                 answer: questionAnswer.answer
             });
             quiz_AnswerDetails[quizResultId].push(answerDetail);
-
         }
         uint amount = correctAnswers * 10;
         QuizResult memory quizResult = QuizResult({
@@ -178,7 +206,26 @@ contract Quiz is IERC20 {
         return user_quizResults[msg.sender];
     }
 
-    function getQuizDetail(uint quizResultId) external view returns (AnswerDetail[] memory){
+    function getQuizDetail(
+        uint quizResultId
+    ) external view returns (AnswerDetail[] memory) {
         return quiz_AnswerDetails[quizResultId];
+    }
+
+    function getRole(address user) external view returns (uint8) {
+        if (user == owner) {
+            return 1; // Owner
+        } else if (managers[user]) {
+            return 2; // Manager
+        } else {
+            return 3; // Regular user
+        }
+    }
+
+    event ManagerSet(address user, bool isManager);
+
+    function setManagers(address user, bool isManager) public onlyOwner {
+        managers[user] = isManager;
+        emit ManagerSet(user, isManager);
     }
 }
