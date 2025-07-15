@@ -55,9 +55,9 @@ class TokenTransfer extends Component {
         let ethBalance = web3.utils.fromWei(ethBalanceInWei, 'ether');
         let nftBalance = await quizContract.methods.balanceOf(address).call();
 
+        console.log('balance', nftBalance)
         ethBalance = ethBalance ? parseFloat(ethBalance).toFixed(18) : '0';
         nftBalance = nftBalance ? parseInt(nftBalance, 10) : 0;
-
         let userInfo = {
             address: address,
             ethBalance: ethBalance,
@@ -351,7 +351,7 @@ class TokenTransfer extends Component {
                             >
                                 {isTransferring ? '🔄 Transferring...' : '🚀 Transfer'}
                             </button>
-                            {(role == 1) && (
+                            {(role === 1) && (
                                 <button
                                     className="btn btn-primary"
                                     disabled={isMinting}

@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import quizContract from "../contract/quizContract";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import web3 from "../contract/web3";
 
 class TokenTransferHistory extends Component {
     constructor(props) {
@@ -37,6 +38,10 @@ class TokenTransferHistory extends Component {
         }
     }
 
+    replacer = (key, value) => {
+        return typeof value === 'bigint' ? parseInt(value.toString()) : value;
+    }
+
     fetchTransfers = async () => {
         this.setState({ loading: true, isSampleData: false });
         try {
@@ -44,14 +49,19 @@ class TokenTransferHistory extends Component {
                 fromBlock: 0,
                 toBlock: 'latest'
             });
-            const transfers = events.map(event => ({
-                from: event.returnValues.from,
-                to: event.returnValues.to,
-                value: String(event.returnValues.value),
-                txHash: event.transactionHash,
-                blockNumber: event.blockNumber,
-                timestamp: new Date().toLocaleString(),
-                status: 'Success'
+            console.log('events', events)
+            const transfers = await Promise.all(events.map(async (event) => {
+                const block = await web3.eth.getBlock(event.blockNumber);  
+                const ts = Number(block.timestamp);                   
+                return {
+                    from: event.returnValues.from,
+                    to: event.returnValues.to,
+                    value: parseInt(event.returnValues.value.toString()),
+                    txHash: event.transactionHash,
+                    blockNumber: parseInt(event.blockNumber.toString()),
+                    timestamp: new Date(ts * 1000).toLocaleString(),     
+                    status: 'Success'
+                };
             }));
             this.setState({ transfers: transfers.reverse(), loading: false });
         } catch (error) {
@@ -60,39 +70,6 @@ class TokenTransferHistory extends Component {
         }
     }
 
-    loadSampleData = () => {
-        const sampleTransfers = [
-            {
-                from: '0x0000000000000000000000000000000000000000',
-                to: '0x1234567890abcdef1234567890abcdef12345678',
-                value: '1000000000000000000',
-                txHash: '0xsampletxhash1',
-                blockNumber: 12345678,
-                timestamp: '10/15/2023, 3:45 PM',
-                status: 'Success'
-            },
-            {
-                from: '0x1234567890abcdef1234567890abcdef12345678',
-                to: '0xabcdef1234567890abcdef1234567890abcdef12',
-                value: '500000000000000000',
-                txHash: '0xsampletxhash2',
-                blockNumber: 12345679,
-                timestamp: '10/15/2023, 3:46 PM',
-                status: 'Success'
-            },
-            {
-                from: '0xabcdef1234567890abcdef1234567890abcdef12',
-                to: '0x0000000000000000000000000000000000000000',
-                value: '200000000000000000',
-                txHash: '0xsampletxhash3',
-                blockNumber: 12345680,
-                timestamp: '10/15/2023, 3:47 PM',
-                status: 'Failed'
-            }
-        ];
-        this.setState({ transfers: sampleTransfers, isSampleData: true, loading: false });
-    }
-    
     sortTransfers = (transfers, sortColumn, sortOrder) => {
         const sorted = [...transfers];
         sorted.sort((a, b) => {
@@ -150,11 +127,9 @@ class TokenTransferHistory extends Component {
     renderFrom = (from) => {
         return from === '0x0000000000000000000000000000000000000000' ? 'Mint' : this.truncateAddress(from);
     }
-
-
     renderTo = (to) => {
         return to === '0x0000000000000000000000000000000000000000' ? 'Burn' : this.truncateAddress(to);
-    }   
+    }
 
     formatAmount = (valueStr, decimals) => {
         const value = BigInt(valueStr);
@@ -212,16 +187,12 @@ class TokenTransferHistory extends Component {
                         📜 Transfer History for {nftSymbol}
                     </h3>
                     <div>
-                        <button className="btn btn-secondary me-2" onClick={this.loadSampleData}>
-                            Load Sample Data
-                        </button>
                         <button className="btn btn-primary" onClick={this.fetchTransfers} disabled={loading}>
                             {loading ? '🔄 Loading...' : '🔄 Refresh History'}
                         </button>
                     </div>
                 </div>
                 <div className="card-body">
-                    {isSampleData && <p className="text-info">Showing sample data</p>}
                     <div className="mb-3">
                         <input
                             type="text"
@@ -298,7 +269,7 @@ class TokenTransferHistory extends Component {
                                         <tr key={index}>
                                             <td>{this.renderFrom(transfer.from)}</td>
                                             <td>{this.renderTo(transfer.to)}</td>
-                                            <td>{this.formatAmount(transfer.value, decimals)}</td>
+                                            <td>{transfer.value}</td>
                                             <td>{this.truncateAddress(transfer.txHash)}</td>
                                             <td>{transfer.blockNumber}</td>
                                             <td>{transfer.timestamp}</td>
