@@ -5,6 +5,7 @@ import TakeQuizHistory from './components/TakeQuizHistory';
 import ViewQuestions from './components/ViewQuestions';
 import TokenTransfer from './components/TokenTransfer';
 import TokenTransferHistory from './components/TokenTransferHistory';
+import Leaderboard from './components/LeaderBoard';
 
 import quizContract from "./contract/quizContract";
 import AlertModal from "./components/AlertModal";
@@ -244,6 +245,8 @@ class App extends Component {
                 return <TokenTransfer role ={role} />;
             case 'nftHistory':
                 return <TokenTransferHistory/>;
+            case 'leaderBoard':
+                return <Leaderboard/>;
             case 'manager':
                 return <SetManagers />
             default:
@@ -459,6 +462,30 @@ class App extends Component {
                         </button>
                         <button
                             className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
+                                currentView === 'leaderBoard' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+                            }`}
+                            onClick={() => this.setCurrentView('leaderBoard')}
+                            style={{
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                if (currentView !== 'leaderBoard') {
+                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.paddingLeft = '1.5rem';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (currentView !== 'leaderBoard') {
+                                    e.currentTarget.style.backgroundColor = '';
+                                    e.currentTarget.style.paddingLeft = '';
+                                }
+                            }}
+                        >
+                            <span className="fs-5">🏆</span>
+                            <span>LeaderBoard</span>
+                        </button>
+                        <button
+                            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
                                 currentView === 'nftHistory' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
                             }`}
                             onClick={() => this.setCurrentView('nftHistory')}
@@ -481,7 +508,7 @@ class App extends Component {
                             <span className="fs-5">🧾</span>
                             <span>Transfer History</span>
                         </button>
-                        {(this.state.role == 1) && (
+                        {(this.state.role === 1) && (
                             <button
                                 className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${currentView === 'manager' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
                                     }`}
@@ -572,7 +599,7 @@ class App extends Component {
                             <span className="fs-6">🎨</span>
                             <span>Token</span>
                         </button>
-                        {(this.state.role == 1) && (
+                        {(this.state.role === 1) && (
                             <button
                                 className={`btn text-white d-flex flex-column align-items-center justify-content-center gap-1 px-2 py-2 border-0 flex-shrink-0 ${currentView === 'manager' ? 'bg-light bg-opacity-25 fw-semibold' : ''
                                     }`}
