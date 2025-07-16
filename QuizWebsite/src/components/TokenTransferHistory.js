@@ -1,6 +1,6 @@
 /* global BigInt */
 
-import React, { Component } from 'react';
+import { Component } from 'react';
 import quizContract from "../contract/quizContract";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -36,10 +36,6 @@ class TokenTransferHistory extends Component {
             console.error('Error in componentDidMount:', error);
             this.setState({ loading: false });
         }
-    }
-
-    replacer = (key, value) => {
-        return typeof value === 'bigint' ? parseInt(value.toString()) : value;
     }
 
     fetchTransfers = async () => {
@@ -148,7 +144,7 @@ class TokenTransferHistory extends Component {
 
 
     render() {
-        const { loading, transfers, nftSymbol, decimals, isSampleData, sortColumn, sortOrder, filterFrom, filterTo, filterStatus, searchTerm, currentPage, itemsPerPage } = this.state;
+        const { loading, transfers, nftSymbol, sortColumn, sortOrder, filterFrom, filterTo, filterStatus, searchTerm, currentPage, itemsPerPage } = this.state;
 
         if (loading) {
             return (
