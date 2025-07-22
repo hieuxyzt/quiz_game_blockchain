@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import QuestionPresets from './QuestionPresets';
-import ConfirmModal from './ConfirmModal';
-import AlertModal from './AlertModal';
+import QuestionPresets from '../components/QuestionPresets';
+import ConfirmModal from '../components/ConfirmModal';
+import AlertModal from '../components/AlertModal';
 
 import quizContract from "../contract/quizContract";
 import web3 from "../contract/web3";

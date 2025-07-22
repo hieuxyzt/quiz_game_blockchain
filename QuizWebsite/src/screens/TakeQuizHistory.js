@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import AlertModal from './AlertModal';
+import AlertModal from '../components/AlertModal';
 import quizContract from "../contract/quizContract";
 import web3 from "../contract/web3";
 
@@ -101,8 +101,9 @@ class TakeQuizHistory extends Component {
   };
 
   formatDate = (date) => {
+    console.log(date)
     try {
-      return new Date(parseInt(date) * 1000).toLocaleDateString('vi-VN', {
+      return new Date(date).toLocaleDateString('en-EN', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -251,7 +252,7 @@ class TakeQuizHistory extends Component {
 
                     <div className="mb-0">
                       <small className="text-muted" style={{ fontSize: '0.85rem' }}>
-                        📅 {this.formatDate(quiz.createdAtTimestamp)}
+                        📅 {this.formatDate(quiz.createdAt)}
                       </small>
                     </div>
 

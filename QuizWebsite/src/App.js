@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
-import BatchCreateQuestion from './components/BatchCreateQuestion';
-import TakeQuiz from './components/TakeQuiz';
-import TakeQuizHistory from './components/TakeQuizHistory';
-import ViewQuestions from './components/ViewQuestions';
-import TokenTransfer from './components/TokenTransfer';
-import TokenTransferHistory from './components/TokenTransferHistory';
-import Leaderboard from './components/LeaderBoard';
+import BatchCreateQuestion from './screens/BatchCreateQuestion';
+import TakeQuiz from './screens/TakeQuiz';
+import TakeQuizHistory from './screens/TakeQuizHistory';
+import ViewQuestions from './screens/ViewQuestions';
+import TokenTransfer from './screens/TokenTransfer';
+import TokenTransferHistory from './screens/TokenTransferHistory';
+import Leaderboard from './screens/LeaderBoard';
 
 import quizContract from "./contract/quizContract";
 import AlertModal from "./components/AlertModal";
-import SetManagers from './components/SetManagers';
-
+import SetManagers from './screens/SetManagers';
+import NFTShop from './screens/NFTShop';
 
 class App extends Component {
 
@@ -60,7 +60,6 @@ class App extends Component {
                     // 👇 User switched account
                     const account = accounts[0];
                     this.setState({ account });
-                    this.loadQuestions(); // optional: load new account's data
                 }
             });
 
@@ -242,13 +241,15 @@ class App extends Component {
                     />
                 );
             case 'nft':
-                return <TokenTransfer role ={role} />;
+                return <TokenTransfer role={role} />;
             case 'nftHistory':
-                return <TokenTransferHistory/>;
+                return <TokenTransferHistory />;
             case 'leaderBoard':
-                return <Leaderboard/>;
+                return <Leaderboard />;
             case 'manager':
                 return <SetManagers />
+            case 'shop':
+                return <NFTShop />
             default:
                 return <TakeQuiz questions={questions} />;
         }
@@ -461,9 +462,8 @@ class App extends Component {
                             <span>Token Transfer</span>
                         </button>
                         <button
-                            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
-                                currentView === 'leaderBoard' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
-                            }`}
+                            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${currentView === 'leaderBoard' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+                                }`}
                             onClick={() => this.setCurrentView('leaderBoard')}
                             style={{
                                 transition: 'all 0.3s ease'
@@ -485,9 +485,8 @@ class App extends Component {
                             <span>LeaderBoard</span>
                         </button>
                         <button
-                            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${
-                                currentView === 'nftHistory' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
-                            }`}
+                            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${currentView === 'nftHistory' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+                                }`}
                             onClick={() => this.setCurrentView('nftHistory')}
                             style={{
                                 transition: 'all 0.3s ease'
@@ -534,6 +533,30 @@ class App extends Component {
                                 <span>Setup Managers</span>
                             </button>
                         )}
+                        {/* <button
+                        
+                            className={`btn w-100 text-start text-white d-flex align-items-center gap-3 px-3 py-3 border-0 ${currentView === 'shop' ? 'bg-light bg-opacity-25 border-end border-white border-3 fw-semibold' : ''
+                                }`}
+                            onClick={() => this.setCurrentView('shop')}
+                            style={{
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                if (currentView !== 'shop') {
+                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.paddingLeft = '1.5rem';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (currentView !== 'shop') {
+                                    e.currentTarget.style.backgroundColor = '';
+                                    e.currentTarget.style.paddingLeft = '';
+                                }
+                            }}
+                        >
+                            <span className="fs-5">🛍️</span>
+                            <span>Shop</span>
+                        </button> */}
                     </div>
                 </nav>
 

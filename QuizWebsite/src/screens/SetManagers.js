@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import AlertModal from './AlertModal';
+import AlertModal from '../components/AlertModal';
 import quizContract from '../contract/quizContract';
 import web3 from '../contract/web3';
 

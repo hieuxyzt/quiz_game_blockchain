@@ -45,7 +45,6 @@ class TokenTransferHistory extends Component {
                 fromBlock: 0,
                 toBlock: 'latest'
             });
-            console.log('events', events)
             const transfers = await Promise.all(events.map(async (event) => {
                 const block = await web3.eth.getBlock(event.blockNumber);  
                 const ts = Number(block.timestamp);                   

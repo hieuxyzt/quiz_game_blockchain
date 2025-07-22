@@ -15,7 +15,7 @@ class TokenTransfer extends Component {
             nftSymbol: '',
             formData: {
                 nftAmount: '10',
-                toAddress: '0x7bC1bdD2E1d8c600145f4c8442ed7bc10D50d772'
+                toAddress: ''
             },
             isTransferring: false,
             isMinting: false,
@@ -55,9 +55,9 @@ class TokenTransfer extends Component {
         let ethBalance = web3.utils.fromWei(ethBalanceInWei, 'ether');
         let nftBalance = await quizContract.methods.balanceOf(address).call();
 
-        console.log('balance', nftBalance)
         ethBalance = ethBalance ? parseFloat(ethBalance).toFixed(18) : '0';
         nftBalance = nftBalance ? parseInt(nftBalance, 10) : 0;
+        console.log(nftBalance)
         let userInfo = {
             address: address,
             ethBalance: ethBalance,
